@@ -14,22 +14,18 @@ import com.vadrin.homeautomation.models.AlexaCardAndSpeech;
 import com.vadrin.homeautomation.models.AlexaResponse;
 import com.vadrin.homeautomation.models.Chat;
 import com.vadrin.homeautomation.models.Intent;
-import com.vadrin.homeautomation.repositories.DevicesRepository;
-import com.vadrin.homeautomation.repositories.IntentsRepository;
+import com.vadrin.homeautomation.repositories.IntentRepository;
 
 @Service
 public class AlexaService {
   
   @Autowired
-  DevicesRepository devicesRepository;
-  
-  @Autowired
-  IntentsRepository intentsRepository;
+  IntentRepository intentRepository;
 	
   private static final String GREET = "Hello! Welcome to Vadrin! What would you like to know?";
   private static final String BYE = "Bye Bye!";
   private static final String DONT_HAVE = "Unfortunately, I dont have its information. Please try later.";
-  private static final String IS = " is ";
+  private static final String IS = " is at ";
 
 	public AlexaResponse respond(JsonNode alexaRequestBody) {
 		if (alexaRequestBody.get("request").has("dialogState")
@@ -139,13 +135,12 @@ public class AlexaService {
     case "SessionEndedRequest":
       return new Chat(BYE, true);
     default:
-      String device = intentsRepository.getDeviceName(intent.getName());
-      String reading = devicesRepository.getDeviceReading(device);
+      String reading = intentRepository.getReading(intent.getName());
       if (reading == null || reading.isBlank())
         return new Chat(DONT_HAVE, true);
       else
         return new Chat(
-            device + IS + devicesRepository.getDeviceReading(intentsRepository.getDeviceName(intent.getName())), true);
+            intent.getName() + IS + intentRepository.getReading(intent.getName()), true);
     }
   }
 

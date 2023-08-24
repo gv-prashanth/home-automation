@@ -7,25 +7,25 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.vadrin.homeautomation.repositories.DevicesRepository;
+import com.vadrin.homeautomation.repositories.IntentRepository;
 
 @RestController
 public class WebController {
-
+  
   @Autowired
-  private DevicesRepository devicesRepository;
+  IntentRepository intentRepository;
 
-  @GetMapping("/device/upsertReading")
-  public void upsertReading(@RequestParam String deviceName, @RequestParam String deviceReading) {
-    System.out.println("request is - " + deviceName + " " + deviceReading);
-    devicesRepository.upsertDeviceReading(deviceName, deviceReading);
+  @GetMapping("/intent/upsert")
+  public void upsertReading(@RequestParam String name, @RequestParam String reading) {
+    System.out.println("request is - " + name + " " + reading);
+    intentRepository.upsertIntent(name, reading);
     ;
   }
 
-  @GetMapping("/devices")
-  public Map<String, String> devices() {
-    System.out.println("request is - /devices");
-    return devicesRepository.getAllDeviceReadings();
+  @GetMapping("/intents")
+  public Map<String, String> intents() {
+    System.out.println("request is - /intents");
+    return intentRepository.getAllReadings();
   }
 
 }
