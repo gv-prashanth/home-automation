@@ -25,7 +25,7 @@ public class AlexaService {
   private static final String GREET = "Hello! Welcome to Vadrin! What would you like to know?";
   private static final String BYE = "Bye Bye!";
   private static final String DONT_HAVE = "Unfortunately, I dont have its information. Please try later.";
-  private static final String IS = " is at ";
+  private static final String IS = " is ";
 
 	public AlexaResponse respond(JsonNode alexaRequestBody) {
 		if (alexaRequestBody.get("request").has("dialogState")
