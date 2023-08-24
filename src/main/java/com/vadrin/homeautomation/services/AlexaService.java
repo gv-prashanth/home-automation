@@ -22,7 +22,7 @@ public class AlexaService {
   @Autowired
   IntentRepository intentRepository;
 	
-  private static final String GREET = "Hello! Welcome to Vadrin! What would you like to know?";
+  private static final String GREET = "Hello! Welcome to Vadrin! You can ask me about Water Level, Back Curtain, Side Curtain.";
   private static final String BYE = "Bye Bye!";
   private static final String DONT_HAVE = "Unfortunately, I dont have its information. Please try later.";
   private static final String IS = " is ";
