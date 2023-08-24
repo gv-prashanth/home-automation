@@ -68,7 +68,7 @@ public class AlexaService {
 
 		Map<String, Object> card = new HashMap<String, Object>();
 		card.put("type", "Standard");
-		card.put("title", "MMTS Train");
+		card.put("title", "Vadrin");
 		card.put("text", response);
 
 		Map<String, Object> image = new HashMap<String, Object>();
