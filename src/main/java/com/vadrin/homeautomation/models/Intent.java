@@ -2,17 +2,17 @@ package com.vadrin.homeautomation.models;
 
 import java.util.Map;
 
-public class Event {
+public class Intent {
 
 	private String name;
 	private Map<String, String> info;
 
-	public Event(String name) {
+	public Intent(String name) {
 		super();
 		this.name = name;
 	}
 
-	public Event(String name, Map<String, String> info) {
+	public Intent(String name, Map<String, String> info) {
 		super();
 		this.name = name;
 		this.info = info;
@@ -26,7 +26,7 @@ public class Event {
 		this.name = name;
 	}
 
-	public Event() {
+	public Intent() {
 		super();
 		// TODO Auto-generated constructor stub
 	}

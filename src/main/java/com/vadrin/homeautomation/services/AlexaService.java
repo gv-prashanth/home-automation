@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vadrin.homeautomation.models.AlexaCardAndSpeech;
 import com.vadrin.homeautomation.models.AlexaResponse;
 import com.vadrin.homeautomation.models.Chat;
-import com.vadrin.homeautomation.models.Event;
+import com.vadrin.homeautomation.models.Intent;
 import com.vadrin.homeautomation.repositories.DevicesRepository;
 import com.vadrin.homeautomation.repositories.IntentsRepository;
 
@@ -28,7 +28,6 @@ public class AlexaService {
 	
   private static final String GREET = "Hello! Welcome to Vadrin! What would you like to know?";
   private static final String BYE = "Bye Bye!";
-  private static final String TROUBLE_UNDERSTANDING = "I am having trouble understanding you. Please try later.";
   private static final String DONT_HAVE = "Unfortunately, I dont have its information. Please try later.";
   private static final String IS = " is ";
 
@@ -38,25 +37,25 @@ public class AlexaService {
 			return autoFetchSlots(alexaRequestBody);
 		}
 		if (alexaRequestBody.get("request").get("type").asText().equalsIgnoreCase("IntentRequest")) {
-			Map<String, String> eventParams = new HashMap<String, String>();
+			Map<String, String> intentParams = new HashMap<String, String>();
 			try {
 		     alexaRequestBody.get("request").get("intent").get("slots").elements().forEachRemaining(child -> {
 		        try {
-		          eventParams.put(child.get("name").asText(), child.get("resolutions").get("resolutionsPerAuthority")
+		          intentParams.put(child.get("name").asText(), child.get("resolutions").get("resolutionsPerAuthority")
 		              .get(0).get("values").get(0).get("value").get("name").asText());
 		        } catch (NullPointerException e) {
-		          eventParams.put(child.get("name").asText(), child.get("value").asText());
+		          intentParams.put(child.get("name").asText(), child.get("value").asText());
 		        }
 		      });
 			}catch(NullPointerException e) {
 			 //this intent has no slots
 			  System.out.println("this intent has no slots");
 			}
-			Event input = new Event(alexaRequestBody.get("request").get("intent").get("name").asText(), eventParams);
+			Intent input = new Intent(alexaRequestBody.get("request").get("intent").get("name").asText(), intentParams);
 			Chat output = handle(alexaRequestBody.get("session").get("sessionId").asText(), input);
 			return constructAlexaResponse(output);
 		} else {
-			Event input = new Event(alexaRequestBody.get("request").get("type").asText());
+			Intent input = new Intent(alexaRequestBody.get("request").get("type").asText());
 			Chat output = handle(alexaRequestBody.get("session").get("sessionId").asText(), input);
 			return constructAlexaResponse(output);
 		}
@@ -124,24 +123,15 @@ public class AlexaService {
 	}
 	
 
-  private Chat handle(String conversationId, Event event) {
+  private Chat handle(String conversationId, Intent intent) {
     System.out.println(conversationId);
-    switch (event.getName()) {
+    switch (intent.getName()) {
     case "LaunchRequest":
       return new Chat(GREET, false);
     case "Default Welcome Intent":
       return new Chat(GREET, false);
     case "AMAZON.HelpIntent":
       return new Chat(GREET, false);
-    case "WaterLevelIntent": {
-      String device = intentsRepository.getDeviceName(event.getName());
-      String reading = devicesRepository.getDeviceReading(device);
-      if (reading == null || reading.isBlank())
-        return new Chat(DONT_HAVE, true);
-      else
-        return new Chat(
-            device + IS + devicesRepository.getDeviceReading(intentsRepository.getDeviceName(event.getName())), true);
-    }
     case "AMAZON.CancelIntent":
       return new Chat(BYE, true);
     case "AMAZON.StopIntent":
@@ -149,7 +139,13 @@ public class AlexaService {
     case "SessionEndedRequest":
       return new Chat(BYE, true);
     default:
-      return new Chat(TROUBLE_UNDERSTANDING, true);
+      String device = intentsRepository.getDeviceName(intent.getName());
+      String reading = devicesRepository.getDeviceReading(device);
+      if (reading == null || reading.isBlank())
+        return new Chat(DONT_HAVE, true);
+      else
+        return new Chat(
+            device + IS + devicesRepository.getDeviceReading(intentsRepository.getDeviceName(intent.getName())), true);
     }
   }
 
