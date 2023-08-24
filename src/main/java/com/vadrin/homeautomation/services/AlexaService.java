@@ -39,14 +39,19 @@ public class AlexaService {
 		}
 		if (alexaRequestBody.get("request").get("type").asText().equalsIgnoreCase("IntentRequest")) {
 			Map<String, String> eventParams = new HashMap<String, String>();
-			alexaRequestBody.get("request").get("intent").get("slots").elements().forEachRemaining(child -> {
-				try {
-					eventParams.put(child.get("name").asText(), child.get("resolutions").get("resolutionsPerAuthority")
-							.get(0).get("values").get(0).get("value").get("name").asText());
-				} catch (NullPointerException e) {
-					eventParams.put(child.get("name").asText(), child.get("value").asText());
-				}
-			});
+			try {
+		     alexaRequestBody.get("request").get("intent").get("slots").elements().forEachRemaining(child -> {
+		        try {
+		          eventParams.put(child.get("name").asText(), child.get("resolutions").get("resolutionsPerAuthority")
+		              .get(0).get("values").get(0).get("value").get("name").asText());
+		        } catch (NullPointerException e) {
+		          eventParams.put(child.get("name").asText(), child.get("value").asText());
+		        }
+		      });
+			}catch(NullPointerException e) {
+			 //this intent has no slots
+			  System.out.println("this intent has no slots");
+			}
 			Event input = new Event(alexaRequestBody.get("request").get("intent").get("name").asText(), eventParams);
 			Chat output = handle(alexaRequestBody.get("session").get("sessionId").asText(), input);
 			return constructAlexaResponse(output);
