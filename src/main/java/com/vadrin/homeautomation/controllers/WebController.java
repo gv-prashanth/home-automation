@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,13 +20,18 @@ public class WebController {
   public void upsertReading(@RequestParam String name, @RequestParam String reading) {
     System.out.println("request is - " + name + " " + reading);
     intentRepository.upsertIntent(name, reading);
-    ;
   }
 
   @GetMapping("/intents")
   public Map<String, String> intents() {
     System.out.println("request is - /intents");
     return intentRepository.getAllReadings();
+  }
+  
+  @GetMapping("/upsert/intent/{name}/reading/{reading}")
+  public void upsert(@PathVariable String name,@PathVariable String reading) {
+    System.out.println("request is - " + name + " " + reading);
+    intentRepository.upsertIntent(name, reading);
   }
 
 }
