@@ -44,9 +44,9 @@ public class AlexaService {
     Intent intent = new Intent(intentName, intentParams, userId);
     Response response = handleIntentRequest(conversationId, intent);
     AlexaResponse toReturn =  constructAlexaResponse(response);
-    if (requestType.equalsIgnoreCase("LaunchRequest") && !userRepository.isRegistered(userId)) {
-      addRedirectToCreateHomeIntent(toReturn);
-    }
+//    if (requestType.equalsIgnoreCase("LaunchRequest") && !userRepository.isRegistered(userId)) {
+//      addRedirectToCreateHomeIntent(toReturn);
+//    }
     return toReturn;
 	}
 	
