@@ -47,8 +47,6 @@ public class AlexaService {
     if (requestType.equalsIgnoreCase("LaunchRequest")) {
       if(!userRepository.isRegistered(userId)) {
         addRedirectToCreateHomeIntent(toReturn, "CreateHome");
-      }else {
-        addRedirectToCreateHomeIntent(toReturn, "AMAZON.HelpIntent");
       }
     }
     return toReturn;
