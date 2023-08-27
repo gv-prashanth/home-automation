@@ -54,7 +54,7 @@ public class AlexaService {
     List<Map<String, Object>> directives = new ArrayList<Map<String, Object>>();
     Map<String, Object> updateIntent = new HashMap<String, Object>();
     updateIntent.put("type", "Dialog.Delegate");
-    updateIntent.put("updatedIntent", "createHome");
+    updateIntent.put("updatedIntent", "CreateHome");
     directives.add(updateIntent);
     toReturn.getResponse().setDirectives(directives);
   }
