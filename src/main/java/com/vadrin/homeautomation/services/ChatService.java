@@ -10,7 +10,8 @@ import com.vadrin.homeautomation.repositories.IntentRepository;
 @Service
 public class ChatService {
   
-  private static final String GREET = "Hello! Which device information would you like to know?";
+  private static final String GREET = "Hello! Which device would you like to know about?";
+  private static final String HELP = "You can ask me about Water Tank, Solar Panel, Curtains, etc.";
   private static final String BYE = "Bye Bye!";
   private static final String DONT_HAVE = "Unfortunately, I dont have its information. Please try later.";
   private static final String IS = " is ";
@@ -23,15 +24,11 @@ public class ChatService {
     switch (intent.getIntentName()) {
     case "LaunchRequest":
       return new Response(GREET, false);
-    case "Default Welcome Intent":
-      return new Response(GREET, false);
     case "AMAZON.HelpIntent":
-      return new Response(GREET, false);
+      return new Response(HELP, false);
     case "AMAZON.CancelIntent":
       return new Response(BYE, true);
     case "AMAZON.StopIntent":
-      return new Response(BYE, true);
-    case "SessionEndedRequest":
       return new Response(BYE, true);
     default:
       String reading = intentRepository.getReading(intent.getIntentName());
