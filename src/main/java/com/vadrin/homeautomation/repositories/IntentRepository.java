@@ -13,7 +13,10 @@ public class IntentRepository {
   private Map<String, Map<String, String>> intentRepository;
   
   public String getReading(String homeName, String intentName) {
-    return intentRepository.get(homeName).get(intentName);
+    if (intentRepository.containsKey(homeName))
+      return intentRepository.get(homeName).get(intentName);
+    else
+      return null;
   }
   
   public void upsertIntent(String homeName, String intentName, String intentReading) {
