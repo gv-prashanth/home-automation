@@ -3,7 +3,11 @@
 <head>
 <meta charset="ISO-8859-1">
 <title>My Droid Dashboard</title>
+<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
 <script>
+function loadHomeName(){
+document.getElementById("homeName").value = localStorage.getItem("homename");
+}
 function loadDoc() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -16,6 +20,7 @@ function loadDoc() {
 	            }
 	            tableHtml += '</table>';
 	            document.getElementById("resp").innerHTML = tableHtml;
+	            localStorage.setItem("homename", document.getElementById("homeName").value);
             }catch(err){
 				document.getElementById("resp").innerHTML = '';
             }
@@ -44,11 +49,11 @@ height: 30px; width: 250px; font-size: 16px;
 }
 </style>
 </head>
-<body onload="loadDoc()">
+<body onload="loadHomeName();loadDoc();">
 	<center>
 		<img src="/images/HomeDroid2Small.png"/>
 		<h1>My Droid Dashboard</h1>
-		<input type="text" id="homeName"/>
+		<input type="text" id="homeName" placeholder="Please enter your home name"/>
 		<h2 id="resp"></h2>
 	</center>
 </body>
