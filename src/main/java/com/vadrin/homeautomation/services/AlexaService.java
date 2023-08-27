@@ -1,6 +1,8 @@
 package com.vadrin.homeautomation.services;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,25 +13,51 @@ import com.vadrin.homeautomation.models.Intent;
 import com.vadrin.homeautomation.models.Response;
 import com.vadrin.homeautomation.models.alexa.AlexaCardAndSpeech;
 import com.vadrin.homeautomation.models.alexa.AlexaResponse;
+import com.vadrin.homeautomation.repositories.IntentRepository;
+import com.vadrin.homeautomation.repositories.UserRepository;
 
 @Service
 public class AlexaService {
-
-	@Autowired
-	ChatService chatService;
 	
+  private static final String GREET = "Hello! Which device would you like to know about?";
+  private static final String HELP = "You can ask me about Water Tank, Solar Panel, Curtains, etc.";
+  private static final String BYE = "Bye Bye!";
+  private static final String DONT_HAVE = "Unfortunately, I dont have its information. Please try later.";
+  private static final String IS = " is ";
+  private static final String PREPARE_HOME = "Thanks. Give me couple of minutes to prepare your home";
+  private static final String TELL_HOME = "Your home is ";
+  
+  @Autowired
+  IntentRepository intentRepository;
+  
+  @Autowired
+  UserRepository userRepository;
+  
 	public AlexaResponse respond(JsonNode alexaRequestBody) {
     String conversationId = alexaRequestBody.get("session").get("sessionId").asText();
 	  String requestType = alexaRequestBody.get("request").get("type").asText();
+	  String userId = alexaRequestBody.get("session").get("user").get("userId").asText();
 
     //Arrive at intent name using intentrequest object. if not possible arrive using request type.
     String intentName = requestType.equalsIgnoreCase("IntentRequest") ? alexaRequestBody.get("request").get("intent").get("name").asText() : requestType;
     Map<String, String> intentParams = constructIntentParams(alexaRequestBody);
-    Intent intent = new Intent(intentName, intentParams);
-    Response response = chatService.handleIntentRequest(conversationId, intent);
+    Intent intent = new Intent(intentName, intentParams, userId);
+    Response response = handleIntentRequest(conversationId, intent);
     AlexaResponse toReturn =  constructAlexaResponse(response);
+    if (requestType.equalsIgnoreCase("LaunchRequest") && !userRepository.isRegistered(userId)) {
+      addRedirectToCreateHomeIntent(toReturn);
+    }
     return toReturn;
 	}
+	
+  private void addRedirectToCreateHomeIntent(AlexaResponse toReturn) {
+    List<Map<String, Object>> directives = new ArrayList<Map<String, Object>>();
+    Map<String, Object> updateIntent = new HashMap<String, Object>();
+    updateIntent.put("type", "Dialog.Delegate");
+    updateIntent.put("updatedIntent", "createHome");
+    directives.add(updateIntent);
+    toReturn.getResponse().setDirectives(directives);
+  }
 
   private Map<String, String> constructIntentParams(JsonNode alexaRequestBody) {
     Map<String, String> eventParams = new HashMap<String, String>();
@@ -67,5 +95,34 @@ public class AlexaService {
     System.out.println("respose is - " + JsonService.getJson(toReturn).toString());
     return toReturn;
 	}
+  
+  private Response handleIntentRequest(String conversationId, Intent intent) {
+    System.out.println(conversationId);
+    switch (intent.getIntentName()) {
+    case "LaunchRequest":
+      return new Response(GREET, false);
+    case "AMAZON.HelpIntent":
+      return new Response(HELP, false);
+    case "AMAZON.CancelIntent":
+      return new Response(BYE, true);
+    case "AMAZON.StopIntent":
+      return new Response(BYE, true);
+    case "WhatIsMyHome":
+      return new Response(TELL_HOME + userRepository.getHome(intent.getUserId()), true);
+    case "CreateHome": {
+      userRepository.register(intent.getUserId(), intent.getInfo().get("homeName"));
+      return new Response(PREPARE_HOME, true);
+    }
+    default:
+      String reading = intentRepository.getReading(userRepository.getHome(intent.getUserId()), intent.getIntentName());
+      if (reading == null || reading.isBlank())
+        return new Response(DONT_HAVE, true);
+      else
+        return new Response(
+            intent.getIntentName() + IS
+                + intentRepository.getReading(userRepository.getHome(intent.getUserId()), intent.getIntentName()),
+            true);
+    }
+  }
 
 }

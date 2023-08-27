@@ -8,17 +8,25 @@ function loadDoc() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-        	var myjson = JSON.parse(this.responseText);
-            let tableHtml = '<table border=2 style="text-align: center; vertical-align: middle; width: 50%;"><tr><th>Device</th><th>Reading</th></tr>';
-            for (const key in myjson){
-            	tableHtml += '<tr><td>'+key+'</td><td>'+myjson[key]+'</td></tr>';
+        	try{
+	        	var myjson = JSON.parse(this.responseText);
+	            let tableHtml = '<table border=2 style="text-align: center; vertical-align: middle; width: 50%;"><tr><th>Device</th><th>Reading</th></tr>';
+	            for (const key in myjson){
+	            	tableHtml += '<tr><td>'+key+'</td><td>'+myjson[key]+'</td></tr>';
+	            }
+	            tableHtml += '</table>';
+	            document.getElementById("resp").innerHTML = tableHtml;
+            }catch(err){
+				document.getElementById("resp").innerHTML = '';
             }
-            tableHtml += '</table>';
-            document.getElementById("resp").innerHTML = tableHtml;
        }
     };
-    xhttp.open("GET", '/intents', true);
-    xhttp.send();
+    if(document.getElementById("homeName").value!=''){
+	    xhttp.open("GET", '/home/'+document.getElementById("homeName").value+'/intents', true);
+	    xhttp.send();
+    }else{
+    	document.getElementById("resp").innerHTML = '';
+    }
 }
 setInterval(function() {
     loadDoc();
@@ -31,12 +39,16 @@ body {
   background-attachment: fixed; 
   background-size: 100% 100%;
 }
+input {
+height: 30px; width: 250px; font-size: 16px;
+}
 </style>
 </head>
 <body onload="loadDoc()">
 	<center>
 		<img src="/images/HomeDroid2Small.png"/>
 		<h1>My Droid Dashboard</h1>
+		<input type="text" id="homeName"/>
 		<h2 id="resp"></h2>
 	</center>
 </body>
