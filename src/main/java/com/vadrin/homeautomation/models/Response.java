@@ -1,6 +1,6 @@
 package com.vadrin.homeautomation.models;
 
-public class Chat {
+public class Response {
 	private String message;
 	private boolean theEnd;
 
@@ -20,13 +20,13 @@ public class Chat {
 		this.theEnd = theEnd;
 	}
 
-	public Chat(String message, boolean theEnd) {
+	public Response(String message, boolean theEnd) {
 		super();
 		this.message = message;
 		this.theEnd = theEnd;
 	}
 
-	public Chat() {
+	public Response() {
 		super();
 		// TODO Auto-generated constructor stub
 	}

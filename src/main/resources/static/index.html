@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>Vadrin Home Automation</title>
+<title>Home Droid Dashboard</title>
 <script>
 function loadDoc() {
     var xhttp = new XMLHttpRequest();
@@ -20,6 +20,9 @@ function loadDoc() {
     xhttp.open("GET", '/intents', true);
     xhttp.send();
 }
+setInterval(function() {
+    loadDoc();
+}, 5000);
 </script>
 <style>
 body {
@@ -32,8 +35,8 @@ body {
 </head>
 <body onload="loadDoc()">
 	<center>
-		<img src="/images/icon.jpg" width="100px" />
-		<h1>Vadrin Home Automation</h1>
+		<img src="/images/HomeDroid2Small.png"/>
+		<h1>Home Droid Dashboard</h1>
 		<h2 id="resp"></h2>
 	</center>
 </body>

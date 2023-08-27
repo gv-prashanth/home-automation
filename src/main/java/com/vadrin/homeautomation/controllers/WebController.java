@@ -17,7 +17,6 @@ public class WebController {
 
   @GetMapping("/intents")
   public Map<String, String> getAllIntents() {
-    System.out.println("request is - /intents");
     return intentRepository.getAllReadings();
   }
   

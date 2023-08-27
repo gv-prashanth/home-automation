@@ -4,39 +4,29 @@ import java.util.Map;
 
 public class Intent {
 
-	private String name;
-	private Map<String, String> info;
+  private String intentName;
+  private Map<String, String> info;
 
-	public Intent(String name) {
-		super();
-		this.name = name;
-	}
+  public String getIntentName() {
+    return intentName;
+  }
 
-	public Intent(String name, Map<String, String> info) {
-		super();
-		this.name = name;
-		this.info = info;
-	}
+  public void setIntentName(String intentName) {
+    this.intentName = intentName;
+  }
 
-	public String getName() {
-		return name;
-	}
+  public Map<String, String> getInfo() {
+    return info;
+  }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  public void setInfo(Map<String, String> info) {
+    this.info = info;
+  }
 
-	public Intent() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
-	public Map<String, String> getInfo() {
-		return info;
-	}
-
-	public void setInfo(Map<String, String> info) {
-		this.info = info;
-	}
+  public Intent(String intentName, Map<String, String> info) {
+    super();
+    this.intentName = intentName;
+    this.info = info;
+  }
 
 }

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.vadrin.homeautomation.models.AlexaResponse;
+import com.vadrin.homeautomation.models.alexa.AlexaResponse;
 import com.vadrin.homeautomation.services.AlexaService;
 
 @RestController

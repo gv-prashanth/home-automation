@@ -33,5 +33,9 @@ public class JsonService {
 	public static <T> Map<String, T> getMapFromJson(JsonNode jsonNode) throws IllegalArgumentException {
 		return om.convertValue(jsonNode, Map.class);
 	}
+	
+	public static JsonNode getJson(byte[] bs) throws JsonParseException, JsonMappingException, IOException {
+	  return om.readValue(bs, JsonNode.class);
+	}
 
 }
