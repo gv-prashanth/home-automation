@@ -19,7 +19,7 @@ import com.vadrin.homeautomation.repositories.UserRepository;
 @Service
 public class AlexaService {
 	
-  private static final String GREET = "Hello! Which device would you like to know about?";
+  private static final String GREET = "Hello. I can help you with your home devices.";
   private static final String HELP = "You can ask me about Water Tank, Solar Panel, Curtains, etc.";
   private static final String BYE = "Bye Bye!";
   private static final String DONT_HAVE = "Unfortunately, I dont have its information. Please try later.";
@@ -44,17 +44,21 @@ public class AlexaService {
     Intent intent = new Intent(intentName, intentParams, userId);
     Response response = handleIntentRequest(conversationId, intent);
     AlexaResponse toReturn =  constructAlexaResponse(response);
-//    if (requestType.equalsIgnoreCase("LaunchRequest") && !userRepository.isRegistered(userId)) {
-//      addRedirectToCreateHomeIntent(toReturn);
-//    }
+    if (requestType.equalsIgnoreCase("LaunchRequest")) {
+      if(!userRepository.isRegistered(userId)) {
+        addRedirectToCreateHomeIntent(toReturn, "CreateHome");
+      }else {
+        addRedirectToCreateHomeIntent(toReturn, "AMAZON.HelpIntent");
+      }
+    }
     return toReturn;
 	}
 	
-  private void addRedirectToCreateHomeIntent(AlexaResponse toReturn) {
+  private void addRedirectToCreateHomeIntent(AlexaResponse toReturn, String intentToRedirect) {
     List<Map<String, Object>> directives = new ArrayList<Map<String, Object>>();
     Map<String, Object> updateIntent = new HashMap<String, Object>();
     updateIntent.put("type", "Dialog.Delegate");
-    updateIntent.put("updatedIntent", "CreateHome");
+    updateIntent.put("updatedIntent", intentToRedirect);
     directives.add(updateIntent);
     toReturn.getResponse().setDirectives(directives);
   }
