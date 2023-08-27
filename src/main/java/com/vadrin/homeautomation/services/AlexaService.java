@@ -20,6 +20,7 @@ import com.vadrin.homeautomation.repositories.UserRepository;
 public class AlexaService {
 	
   private static final String GREET = "Hello. I can help you with your home devices.";
+  private static final String GREETLONG = GREET+" Which device information do you need?";
   private static final String HELP = "You can ask me about Water Tank, Solar Panel, Curtains, etc.";
   private static final String BYE = "Bye Bye!";
   private static final String DONT_HAVE = "Unfortunately, I dont have its information. Please try later.";
@@ -101,9 +102,12 @@ public class AlexaService {
   private Response handleIntentRequest(String conversationId, Intent intent) {
     System.out.println(conversationId);
     switch (intent.getIntentName()) {
-    case "LaunchRequest":
-      return new Response(GREET, false);
-    case "AMAZON.HelpIntent":
+    case "LaunchRequest":{
+      if (userRepository.isRegistered(intent.getUserId()))
+        return new Response(GREETLONG, false);
+      else
+        return new Response(GREET, false);
+    }case "AMAZON.HelpIntent":
       return new Response(HELP, false);
     case "AMAZON.CancelIntent":
       return new Response(BYE, true);
