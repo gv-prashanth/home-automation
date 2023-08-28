@@ -6,11 +6,11 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserRepository {
+public class HomeRepository {
   
   private Map<String, String> userRepository = new HashMap<String, String>();
   
-  public String getHome(String userId) {
+  public String getHomeId(String userId) {
     return userRepository.get(userId);
   }
   
@@ -18,8 +18,8 @@ public class UserRepository {
     return userRepository.containsKey(userId);
   }
   
-  public void register(String userId, String homeName){
-    userRepository.put(userId, homeName);
+  public void register(String userId, String homeId){
+    userRepository.put(userId, homeId);
   }
 
 }

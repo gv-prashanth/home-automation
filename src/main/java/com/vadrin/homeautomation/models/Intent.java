@@ -6,15 +6,6 @@ public class Intent {
 
   private String intentName;
   private Map<String, String> slots;
-  private String userId;
-
-  public String getUserId() {
-    return userId;
-  }
-
-  public void setUserId(String userId) {
-    this.userId = userId;
-  }
 
   public String getIntentName() {
     return intentName;
@@ -32,11 +23,10 @@ public class Intent {
     this.slots = slots;
   }
 
-  public Intent(String intentName, Map<String, String> slots, String userId) {
+  public Intent(String intentName, Map<String, String> slots) {
     super();
     this.intentName = intentName;
     this.slots = slots;
-    this.userId = userId;
   }
 
 }
