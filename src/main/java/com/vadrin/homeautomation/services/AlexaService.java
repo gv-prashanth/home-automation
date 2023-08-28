@@ -101,7 +101,7 @@ public class AlexaService {
       if (!homeRepository.isRegistered(userId)) {
         homeRepository.register(userId, String.valueOf((new Random()).nextInt(100000)));
       }
-      return new Response(GREET + Arrays.asList(homeRepository.getHomeId(userId).toCharArray()).stream().map(String::valueOf).collect(Collectors.joining(" ")) + ", " + ASK, false);
+      return new Response(GREET + Arrays.asList(homeRepository.getHomeId(userId).split("")).stream().collect(Collectors.joining(" ")) + ", " + ASK, false);
     }
     case "AMAZON.HelpIntent":
       return new Response(HELP, false);
