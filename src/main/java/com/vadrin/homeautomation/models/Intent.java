@@ -5,7 +5,7 @@ import java.util.Map;
 public class Intent {
 
   private String intentName;
-  private Map<String, String> info;
+  private Map<String, String> slots;
   private String userId;
 
   public String getUserId() {
@@ -24,18 +24,18 @@ public class Intent {
     this.intentName = intentName;
   }
 
-  public Map<String, String> getInfo() {
-    return info;
+  public Map<String, String> getSlots() {
+    return slots;
   }
 
-  public void setInfo(Map<String, String> info) {
-    this.info = info;
+  public void setSlots(Map<String, String> slots) {
+    this.slots = slots;
   }
 
-  public Intent(String intentName, Map<String, String> info, String userId) {
+  public Intent(String intentName, Map<String, String> slots, String userId) {
     super();
     this.intentName = intentName;
-    this.info = info;
+    this.slots = slots;
     this.userId = userId;
   }
 
