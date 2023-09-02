@@ -1,29 +1,34 @@
 package com.vadrin.homeautomation.controllers;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.vadrin.homeautomation.repositories.IntentRepository;
+import com.vadrin.homeautomation.models.Droid;
+import com.vadrin.homeautomation.services.DroidService;
 
 @RestController
 public class WebController {
   
   @Autowired
-  IntentRepository intentRepository;
+  DroidService droidService;
 
-  @GetMapping("/home/{home}/intents")
-  public Map<String, String> getAllIntents(@PathVariable String home) {
-    return intentRepository.getAllReadings(home);
+  @GetMapping("/droid/{id}/intents")
+  public Map<String, String> getAllIntents(@PathVariable String id) {
+    Optional<Droid> d = droidService.getDroid(id);
+    return d.isPresent()? d.get().getIntentsInfo() : new HashMap<>();
   }
   
-  @GetMapping("/home/{home}/upsert/intent/{name}/reading/{reading}")
-  public void upsertIntent(@PathVariable String home,@PathVariable String name,@PathVariable String reading) {
-    System.out.println("request is - " + home + " " + name + " " + reading);
-    intentRepository.upsertIntent(home, name, reading);
+  @GetMapping("/droid/{id}/upsert/intent/{name}/reading/{reading}")
+  public void upsertIntent(@PathVariable String id,@PathVariable String name,@PathVariable String reading) {
+    System.out.println("intent request is - " + id + " " + name + " " + reading);
+    droidService.upsertIntent(id, name, reading);
   }
 
 }
