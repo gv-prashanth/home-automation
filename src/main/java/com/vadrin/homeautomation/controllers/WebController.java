@@ -21,14 +21,19 @@ public class WebController {
 
   @GetMapping("/droid/{id}/intents")
   public Map<String, String> getAllIntents(@PathVariable String id) {
-    Optional<Droid> d = droidService.getDroid(id);
+    Optional<Droid> d = droidService.getDroid(id.toUpperCase());
     return d.isPresent()? d.get().getIntentsInfo() : new HashMap<>();
+  }
+  
+  @GetMapping("/droid/create")
+  public String createDroid(@RequestParam String userId) {
+    return droidService.createNewDroid(userId).getDroidId();
   }
   
   @GetMapping("/droid/{id}/upsert/intent/{name}/reading/{reading}")
   public void upsertIntent(@PathVariable String id,@PathVariable String name,@PathVariable String reading) {
     System.out.println("intent request is - " + id + " " + name + " " + reading);
-    droidService.upsertIntent(id, name, reading);
+    droidService.upsertIntent(id.toUpperCase(), name, reading);
   }
 
 }
