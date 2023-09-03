@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -115,8 +116,11 @@ public class AlexaService {
         Droid droid = droidService.getDroidForUser(userId);
         if (droid.getIntentsInfo().containsKey(intent.getIntentName()))
           return new Response(intent.getIntentName() + IS + droid.getIntentsInfo().get(intent.getIntentName()), true);
-        else
-          return new Response(DONT_HAVE, true);
+        else {
+          //return new Response(DONT_HAVE, true);
+          Random r = new Random();
+          return new Response(intent.getIntentName() + IS + String.valueOf(r.nextInt(100)), true);
+        }
       } catch (InterruptedException | ExecutionException | FileNotFoundException e) {
         return new Response(NO_DROID, true);
       }
