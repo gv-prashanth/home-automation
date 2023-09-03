@@ -1,8 +1,9 @@
 package com.vadrin.homeautomation.controllers;
 
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,21 +20,25 @@ public class WebController {
   @Autowired
   DroidService droidService;
 
-  @GetMapping("/droid/{id}/intents")
-  public Map<String, String> getAllIntents(@PathVariable String id) {
-    Optional<Droid> d = droidService.getDroid(id.toUpperCase());
-    return d.isPresent()? d.get().getIntentsInfo() : new HashMap<>();
+  @GetMapping("/droid/{droidId}/intents")
+  public Map<String, String> getAllIntents(@PathVariable String droidId) {
+    try {
+      Droid d = droidService.getDroid(droidId.toUpperCase());
+      return d.getIntentsInfo();
+    } catch (InterruptedException | ExecutionException | FileNotFoundException e) {
+      return new HashMap<>();
+    }
   }
   
   @GetMapping("/droid/create")
-  public String createDroid(@RequestParam String userId) {
+  public String createDroid(@RequestParam String userId) throws InterruptedException, ExecutionException {
     return droidService.createNewDroid(userId).getDroidId();
   }
   
-  @GetMapping("/droid/{id}/upsert/intent/{name}/reading/{reading}")
-  public void upsertIntent(@PathVariable String id,@PathVariable String name,@PathVariable String reading) {
-    System.out.println("intent request is - " + id + " " + name + " " + reading);
-    droidService.upsertIntent(id.toUpperCase(), name, reading);
+  @GetMapping("/droid/{droidId}/upsert/intent/{intentName}/reading/{intentReading}")
+  public void upsertIntent(@PathVariable String droidId,@PathVariable String intentName,@PathVariable String intentReading) throws FileNotFoundException, InterruptedException, ExecutionException {
+    System.out.println("intent request is - " + droidId + " " + intentName + " " + intentReading);
+    droidService.upsertIntent(droidId.toUpperCase(), intentName, intentReading);
   }
 
 }

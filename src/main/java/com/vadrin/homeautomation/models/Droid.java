@@ -39,4 +39,9 @@ public class Droid {
     this.intentsInfo = intentsInfo;
   }
 
+  public Droid() {
+    super();
+    // TODO Auto-generated constructor stub
+  }
+
 }

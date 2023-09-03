@@ -1,11 +1,10 @@
 package com.vadrin.homeautomation.services;
 
-import java.util.ArrayList;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,14 +25,14 @@ public class AlexaService {
   private static final String HELP = "You can ask me about Water Tank, Solar Panel, Curtains, etc. " + ASK;
   private static final String BYE = "Bye Bye!";
   private static final String DONT_HAVE = "Sorry. I dont have this information. Please try later.";
-  private static final String NO_DROID = "Sorry. Your droid is no more! Please come back later.";
+  private static final String NO_DROID = "Sorry. We have a malfunctional droid! Please try later.";
   private static final String IS = " is ";
 
   @Autowired
   DroidService droidService;
 
   public AlexaResponse respond(JsonNode alexaRequestBody) {
-    String conversationId = alexaRequestBody.get("session").get("sessionId").asText();
+    //String conversationId = alexaRequestBody.get("session").get("sessionId").asText();
     String requestType = alexaRequestBody.get("request").get("type").asText();
     String userId = alexaRequestBody.get("session").get("user").get("userId").asText();
 
@@ -45,16 +44,9 @@ public class AlexaService {
     Map<String, String> slots = constructIntentSlots(alexaRequestBody);
     Intent intent = new Intent(intentName, slots);
     Response response = handleIntentRequest(userId, intent);
-    return constructAlexaResponse(response);
-  }
-
-  private void addDirectiveToAnotherIntent(AlexaResponse toReturn, String intentToRedirect) {
-    List<Map<String, Object>> directives = new ArrayList<Map<String, Object>>();
-    Map<String, Object> updateIntent = new HashMap<String, Object>();
-    updateIntent.put("type", "Dialog.Delegate");
-    updateIntent.put("updatedIntent", intentToRedirect);
-    directives.add(updateIntent);
-    toReturn.getResponse().setDirectives(directives);
+    AlexaResponse toReturn = constructAlexaResponse(response);
+    System.out.println("respose is - " + JsonService.getJson(toReturn).toString());
+    return toReturn;
   }
 
   private Map<String, String> constructIntentSlots(JsonNode alexaRequestBody) {
@@ -90,23 +82,27 @@ public class AlexaService {
     card.put("image", image);
     AlexaResponse toReturn = new AlexaResponse("1.0", new HashMap<String, Object>(),
         new AlexaCardAndSpeech(speech, card, response.isTheEnd(), null));
-    System.out.println("respose is - " + JsonService.getJson(toReturn).toString());
     return toReturn;
   }
 
   private Response handleIntentRequest(String userId, Intent intent) {
-    Optional<Droid> droid = droidService.getDroidForUser(userId);
     switch (intent.getIntentName()) {
     case "LaunchRequest": {
-      if (!droid.isPresent()) {
-        String droidId = droidService.createNewDroid(userId).getDroidId();
-        return new Response(
-            GREET + Arrays.asList(droidId.split("")).stream().collect(Collectors.joining(" ")) + ", " + ASK, false);
-      } else {
-        String droidId = droid.get().getDroidId();
-        return new Response(
-            GREET + Arrays.asList(droidId.split("")).stream().collect(Collectors.joining(" ")) + ", " + ASK, false);
+      Droid droid;
+      try {
+        droid = droidService.getDroidForUser(userId);
+      } catch (FileNotFoundException e) {
+        try {
+          droid = droidService.createNewDroid(userId);
+        } catch (InterruptedException | ExecutionException e1) {
+          return new Response(NO_DROID, true);
+        }
+      } catch (InterruptedException | ExecutionException e) {
+        return new Response(NO_DROID, true);
       }
+      return new Response(
+          GREET + Arrays.asList(droid.getDroidId().split("")).stream().collect(Collectors.joining(" ")) + ", " + ASK,
+          false);
     }
     case "AMAZON.HelpIntent":
       return new Response(HELP, false);
@@ -115,17 +111,16 @@ public class AlexaService {
     case "AMAZON.StopIntent":
       return new Response(BYE, true);
     default: {
-      if (!droid.isPresent()) {
-        return new Response(NO_DROID, true);
-      } else {
-        if (droid.get().getIntentsInfo().containsKey(intent.getIntentName()))
-          return new Response(intent.getIntentName() + IS + droid.get().getIntentsInfo().get(intent.getIntentName()),
-              true);
+      try {
+        Droid droid = droidService.getDroidForUser(userId);
+        if (droid.getIntentsInfo().containsKey(intent.getIntentName()))
+          return new Response(intent.getIntentName() + IS + droid.getIntentsInfo().get(intent.getIntentName()), true);
         else
           return new Response(DONT_HAVE, true);
+      } catch (InterruptedException | ExecutionException | FileNotFoundException e) {
+        return new Response(NO_DROID, true);
       }
     }
     }
   }
-
 }
