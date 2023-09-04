@@ -39,7 +39,6 @@ public class AlexaCardAndSpeech {
 
 	public AlexaCardAndSpeech() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public List<Map<String, Object>> getDirectives() {

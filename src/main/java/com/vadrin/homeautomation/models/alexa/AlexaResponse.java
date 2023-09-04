@@ -34,7 +34,6 @@ public class AlexaResponse {
 
 	public AlexaResponse() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public AlexaResponse(String version, Map<String, Object> sessionAttributes, AlexaCardAndSpeech response) {

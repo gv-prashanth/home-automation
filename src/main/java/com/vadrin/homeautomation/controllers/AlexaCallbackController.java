@@ -17,7 +17,6 @@ public class AlexaCallbackController {
 
 	@PostMapping("/callback/alexa")
 	public AlexaResponse callback(@RequestBody JsonNode alexaRequestBody) {
-		System.out.println("request is - " + alexaRequestBody.toString());
 		return alexaService.respond(alexaRequestBody);
 	}
 

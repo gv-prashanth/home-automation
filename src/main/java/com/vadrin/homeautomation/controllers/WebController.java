@@ -26,6 +26,7 @@ public class WebController {
       Droid d = droidService.getDroid(droidId.toUpperCase());
       return d.getIntentsInfo();
     } catch (InterruptedException | ExecutionException | FileNotFoundException e) {
+      Thread.currentThread().interrupt();
       return new HashMap<>();
     }
   }
@@ -37,7 +38,6 @@ public class WebController {
   
   @GetMapping("/droid/{droidId}/upsert/intent/{intentName}/reading/{intentReading}")
   public void upsertIntent(@PathVariable String droidId,@PathVariable String intentName,@PathVariable String intentReading) throws FileNotFoundException, InterruptedException, ExecutionException {
-    System.out.println("intent request is - " + droidId + " " + intentName + " " + intentReading);
     droidService.upsertIntent(droidId.toUpperCase(), intentName, intentReading);
   }
 
