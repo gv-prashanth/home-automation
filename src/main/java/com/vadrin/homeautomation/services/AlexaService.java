@@ -21,12 +21,12 @@ import com.vadrin.homeautomation.models.alexa.AlexaResponse;
 @Service
 public class AlexaService {
 
-  private static final String GREET = "Hello! I am your dedicated droid ";
+  private static final String GREET = "Hello! I am your droid ";
   private static final String ASK = "Which information do you need?";
   private static final String HELP = "You can ask me about Water Tank, Solar Panel, Curtains, etc. " + ASK;
   private static final String BYE = "Bye Bye!";
-  private static final String DONT_HAVE = "Sorry. I dont have this information. Please try later.";
-  private static final String NO_DROID = "Sorry. We have a malfunctional droid! Please try later.";
+  private static final String DONT_HAVE = "Sorry. I dont have this information. ";
+  private static final String NO_DROID = "Sorry. You have a malfunctional droid! Please try later.";
   private static final String IS = " is ";
 
   @Autowired
@@ -111,15 +111,17 @@ public class AlexaService {
       return new Response(BYE, true);
     case "AMAZON.StopIntent":
       return new Response(BYE, true);
+    case "AMAZON.FallbackIntent":
+      return new Response(DONT_HAVE + HELP, false);
     default: {
       try {
         Droid droid = droidService.getDroidForUser(userId);
         if (droid.getIntentsInfo().containsKey(intent.getIntentName()))
-          return new Response(intent.getIntentName() + IS + droid.getIntentsInfo().get(intent.getIntentName()), true);
+          return new Response(intent.getIntentName() + IS + droid.getIntentsInfo().get(intent.getIntentName()), false);
         else {
-          //return new Response(DONT_HAVE, true);
+          //return new Response(DONT_HAVE + HELP, false);
           Random r = new Random();
-          return new Response(intent.getIntentName() + IS + String.valueOf(r.nextInt(100)), true);
+          return new Response(intent.getIntentName() + IS + String.valueOf(r.nextInt(100)), false);
         }
       } catch (InterruptedException | ExecutionException | FileNotFoundException e) {
         return new Response(NO_DROID, true);
