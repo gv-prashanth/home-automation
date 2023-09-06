@@ -18,11 +18,8 @@ import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.vadrin.homeautomation.models.Droid;
 
-import lombok.extern.slf4j.Slf4j;
-
 
 @Service
-@Slf4j
 public class DroidService {
   
   
@@ -32,7 +29,7 @@ public class DroidService {
   private Random r = new Random();
 
   public void upsertIntent(String droidId, String intentName, String intentReading) throws InterruptedException, ExecutionException, FileNotFoundException {
-    log.debug("upsert request is - " + droidId + " " + intentName + " " + intentReading);
+    System.out.println("upsert request is - " + droidId + " " + intentName + " " + intentReading);
     Droid d = getDroid(droidId);
     d.getIntentsInfo().put(intentName, intentReading);
     saveDroid(d);

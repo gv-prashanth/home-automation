@@ -17,10 +17,7 @@ import com.vadrin.homeautomation.models.Response;
 import com.vadrin.homeautomation.models.alexa.AlexaCardAndSpeech;
 import com.vadrin.homeautomation.models.alexa.AlexaResponse;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Service
-@Slf4j
 public class AlexaService {
 
   private static final String GREET = "Hello! I am your droid";
@@ -40,9 +37,9 @@ public class AlexaService {
   JsonService jsonService;
 
   public AlexaResponse respond(JsonNode alexaRequestBody) {
-    log.debug("request is - " + alexaRequestBody.toString());
+    System.out.println("request is - " + alexaRequestBody.toString());
     String conversationId = alexaRequestBody.get("session").get("sessionId").asText();
-    log.debug(conversationId);
+    System.out.println(conversationId);
     String requestType = alexaRequestBody.get(REQUEST).get("type").asText();
     String userId = alexaRequestBody.get("session").get("user").get("userId").asText();
 
@@ -55,7 +52,7 @@ public class AlexaService {
     Intent intent = new Intent(intentName, slots);
     Response response = handleIntentRequest(userId, intent);
     AlexaResponse toReturn = constructAlexaResponse(response);
-    log.debug("respose is - " + jsonService.getJson(toReturn).toString());
+    System.out.println("respose is - " + jsonService.getJson(toReturn).toString());
     return toReturn;
   }
 

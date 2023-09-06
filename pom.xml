@@ -33,12 +33,7 @@
 		    <artifactId>spring-cloud-gcp-starter-firestore</artifactId>
 		    <version>3.6.3</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
+		
 	</dependencies>
 
 	<build>
