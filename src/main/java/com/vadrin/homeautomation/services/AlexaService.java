@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -24,15 +23,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AlexaService {
 
-  private static final String GREET = "Hello! I am your droid ";
+  private static final String GREET = "Hello! I am your droid";
   private static final String ASK = "Which device information do you need?";
-  private static final String HELP = "You can ask me about Water Tank, Solar Panel, Curtains, etc. " + ASK;
+  private static final String HELP = "You can ask me about Water Tank, Solar Panel, Curtains, etc.";
   private static final String BYE = "Bye Bye!";
-  private static final String DONT_HAVE = "I dont have this information. ";
-  private static final String NO_DROID = "You have a malfunctional droid! "+BYE;
-  private static final String IS = " is ";
+  private static final String DONT_HAVE = "I dont have this information.";
+  private static final String NO_DROID = "You have a malfunctional droid!";
   private static final String REQUEST = "request";
-  private static final String EMPTY = "";
+  private static final String SPACE = " ";
+  private static final String IS = SPACE + "is" + SPACE;
 
   @Autowired
   DroidService droidService;
@@ -99,13 +98,13 @@ public class AlexaService {
     case "LaunchRequest":
       return handleLaunchIntent(userId);
     case "AMAZON.HelpIntent":
-      return new Response(HELP, false);
+      return new Response(HELP + SPACE + ASK, false);
     case "AMAZON.CancelIntent":
       return new Response(BYE, true);
     case "AMAZON.StopIntent":
       return new Response(BYE, true);
     case "AMAZON.FallbackIntent":
-      return new Response(EMPTY, true);
+      return new Response(DONT_HAVE + SPACE + BYE, true);
     default:
       return handleAcceptedIntents(userId, intent);
     }
@@ -115,17 +114,15 @@ public class AlexaService {
     try {
       Droid droid = droidService.getDroidForUser(userId);
       if (droid.getIntentsInfo().containsKey(intent.getIntentName()))
-        return new Response(intent.getIntentName() + IS + droid.getIntentsInfo().get(intent.getIntentName()), false);
+        return new Response(intent.getIntentName() + IS + droid.getIntentsInfo().get(intent.getIntentName()), true);
       else {
-        // return new Response(DONT_HAVE + HELP, false);
-        Random r = new Random();
-        return new Response(intent.getIntentName() + IS + String.valueOf(r.nextInt(100)), false);
+        return new Response(DONT_HAVE + SPACE + BYE, true);
       }
     } catch (InterruptedException | ExecutionException e) {
       Thread.currentThread().interrupt();
-      return new Response(NO_DROID, true);
+      return new Response(NO_DROID + SPACE + BYE, true);
     } catch (FileNotFoundException e) {
-      return new Response(NO_DROID, true);
+      return new Response(NO_DROID + SPACE + BYE, true);
     }
   }
 
@@ -138,14 +135,14 @@ public class AlexaService {
         droid = droidService.createNewDroid(userId);
       } catch (InterruptedException | ExecutionException e1) {
         Thread.currentThread().interrupt();
-        return new Response(NO_DROID, true);
+        return new Response(NO_DROID + SPACE + BYE, true);
       }
     } catch (InterruptedException | ExecutionException e) {
       Thread.currentThread().interrupt();
-      return new Response(NO_DROID, true);
+      return new Response(NO_DROID + SPACE + BYE, true);
     }
     return new Response(
-        GREET + Arrays.asList(droid.getDroidId().split("")).stream().collect(Collectors.joining(" ")) + ", " + ASK,
+        GREET + SPACE + Arrays.asList(droid.getDroidId().split("")).stream().collect(Collectors.joining(SPACE)) + ", " + ASK,
         false);
   }
 }
