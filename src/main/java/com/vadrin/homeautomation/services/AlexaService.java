@@ -22,6 +22,7 @@ public class AlexaService {
 
   private static final String GREET = "Hello! I am your droid";
   private static final String ASK = "Which device information do you need?";
+  private static final String ASK_OTHER = "Which other device information do you need?";
   private static final String HELP = "You can ask me about BedAC, BedCurtain, Weather, SolarPanel devices.";
   private static final String BYE = "Bye Bye!";
   private static final String DIDNT_UNDERSTAND = "I didnt understand.";
@@ -29,6 +30,7 @@ public class AlexaService {
   private static final String NO_DROID = "You have a malfunctional droid!";
   private static final String REQUEST = "request";
   private static final String SPACE = " ";
+  private static final String DOT = ".";
   private static final String IS = SPACE + "is" + SPACE;
 
   @Autowired
@@ -114,7 +116,7 @@ public class AlexaService {
     try {
       Droid droid = droidService.getDroidForUser(userId);
       if (droid.getIntentsInfo().containsKey(intent.getIntentName()))
-        return new Response(intent.getIntentName() + IS + droid.getIntentsInfo().get(intent.getIntentName()) + SPACE + ASK, false);
+        return new Response(intent.getIntentName() + IS + droid.getIntentsInfo().get(intent.getIntentName()) + DOT + SPACE + ASK_OTHER, false);
       else {
         return new Response(intent.getIntentName() + SPACE + DONT_HAVE_READING + SPACE + ASK, false);
       }
