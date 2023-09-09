@@ -22,9 +22,10 @@ public class AlexaService {
 
   private static final String GREET = "Hello! I am your droid";
   private static final String ASK = "Which device information do you need?";
-  private static final String HELP = "You can ask me about Water Tank, Solar Panel, Curtains, etc.";
+  private static final String HELP = "You can ask me about BedAC, BedCurtain, Weather, SolarPanel devices.";
   private static final String BYE = "Bye Bye!";
-  private static final String DONT_HAVE = "I dont have this information.";
+  private static final String DONT_HAVE_DEVICE = "I dont know this device.";
+  private static final String DONT_HAVE_READING = "Device has not sent any recent information.";
   private static final String NO_DROID = "You have a malfunctional droid!";
   private static final String REQUEST = "request";
   private static final String SPACE = " ";
@@ -101,7 +102,7 @@ public class AlexaService {
     case "AMAZON.StopIntent":
       return new Response(BYE, true);
     case "AMAZON.FallbackIntent":
-      return new Response(DONT_HAVE + SPACE + BYE, true);
+      return new Response(DONT_HAVE_DEVICE + SPACE + HELP + SPACE + ASK, false);
     default:
       return handleAcceptedIntents(userId, intent);
     }
@@ -111,9 +112,9 @@ public class AlexaService {
     try {
       Droid droid = droidService.getDroidForUser(userId);
       if (droid.getIntentsInfo().containsKey(intent.getIntentName()))
-        return new Response(intent.getIntentName() + IS + droid.getIntentsInfo().get(intent.getIntentName()), true);
+        return new Response(intent.getIntentName() + IS + droid.getIntentsInfo().get(intent.getIntentName()), false);
       else {
-        return new Response(DONT_HAVE + SPACE + BYE, true);
+        return new Response(intent.getIntentName() + SPACE + DONT_HAVE_READING + SPACE + ASK, false);
       }
     } catch (InterruptedException | ExecutionException e) {
       Thread.currentThread().interrupt();
