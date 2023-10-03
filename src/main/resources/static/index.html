@@ -8,15 +8,43 @@
 function loadHomeName(){
 document.getElementById("homeName").value = localStorage.getItem("homename");
 }
+function timeSince(date) {
+
+	var seconds = Math.floor((new Date() - date) / 1000);
+
+	var interval = seconds / 31536000;
+
+	if (interval > 1) {
+		return Math.floor(interval) + " years ago";
+	}
+	interval = seconds / 2592000;
+	if (interval > 1) {
+		return Math.floor(interval) + " months ago";
+	}
+	interval = seconds / 86400;
+	if (interval > 1) {
+		return Math.floor(interval) + " days ago";
+	}
+	interval = seconds / 3600;
+	if (interval > 1) {
+		return Math.floor(interval) + " hours ago";
+	}
+	interval = seconds / 60;
+	if (interval > 1) {
+		return Math.floor(interval) + " minutes ago";
+	}
+	//return Math.floor(seconds) + "< minute ago";
+	return "just now";
+}
 function loadDoc() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
         	try{
 	        	var myjson = JSON.parse(this.responseText);
-	            let tableHtml = '<table border=2 style="text-align: center; vertical-align: middle; width: 50%;"><tr><th>Device</th><th>Reading</th></tr>';
+	            let tableHtml = '<table border=2 style="text-align: center; vertical-align: middle; width: 100%;"><tr><th>Device</th><th>Reading</th><th>Time</th></tr>';
 	            for (const key in myjson){
-	            	tableHtml += '<tr><td>'+key+'</td><td>'+myjson[key]+'</td></tr>';
+					tableHtml += '<tr><td>'+key+'</td><td>'+myjson[key].deviceReading+'</td><td>'+timeSince(new Date(myjson[key].readingTime))+'</td></tr>';
 	            }
 	            tableHtml += '</table>';
 	            document.getElementById("resp").innerHTML = tableHtml;

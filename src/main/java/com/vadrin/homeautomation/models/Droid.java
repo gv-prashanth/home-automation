@@ -6,7 +6,7 @@ public class Droid {
 
   private String droidId;
   private String userId;
-  private Map<String, String> intentsInfo;
+  private Map<String, DeviceInfo> devices;
 
   public String getDroidId() {
     return droidId;
@@ -16,12 +16,12 @@ public class Droid {
     this.droidId = id;
   }
 
-  public Map<String, String> getIntentsInfo() {
-    return intentsInfo;
+  public Map<String, DeviceInfo> getDevices() {
+    return devices;
   }
 
-  public void setIntentsInfo(Map<String, String> intentsInfo) {
-    this.intentsInfo = intentsInfo;
+  public void setDevices(Map<String, DeviceInfo> devices) {
+    this.devices = devices;
   }
 
   public String getUserId() {
@@ -32,11 +32,11 @@ public class Droid {
     this.userId = userId;
   }
 
-  public Droid(String droidId, String userId, Map<String, String> intentsInfo) {
+  public Droid(String droidId, String userId, Map<String, DeviceInfo> devices) {
     super();
     this.droidId = droidId;
     this.userId = userId;
-    this.intentsInfo = intentsInfo;
+    this.devices = devices;
   }
 
   public Droid() {

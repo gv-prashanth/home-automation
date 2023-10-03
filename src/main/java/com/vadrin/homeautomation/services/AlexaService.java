@@ -1,6 +1,8 @@
 package com.vadrin.homeautomation.services;
 
 import java.io.FileNotFoundException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,10 +14,10 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vadrin.homeautomation.models.Droid;
-import com.vadrin.homeautomation.models.Intent;
-import com.vadrin.homeautomation.models.Response;
 import com.vadrin.homeautomation.models.alexa.AlexaCardAndSpeech;
 import com.vadrin.homeautomation.models.alexa.AlexaResponse;
+import com.vadrin.homeautomation.models.alexa.Intent;
+import com.vadrin.homeautomation.models.alexa.Response;
 
 @Service
 public class AlexaService {
@@ -32,6 +34,7 @@ public class AlexaService {
   private static final String SPACE = " ";
   private static final String DOT = ".";
   private static final String IS = SPACE + "is" + SPACE;
+  private static final String THIS_IS = "This is";
 
   @Autowired
   DroidService droidService;
@@ -115,17 +118,41 @@ public class AlexaService {
   private Response handleAcceptedIntents(String userId, Intent intent) {
     try {
       Droid droid = droidService.getDroidForUser(userId);
-      if (droid.getIntentsInfo().containsKey(intent.getIntentName()))
-        return new Response(intent.getIntentName() + IS + droid.getIntentsInfo().get(intent.getIntentName()) + DOT + SPACE + ASK_OTHER, false);
-      else {
+      if (droid.getDevices().containsKey(intent.getIntentName()))
+        return new Response(intent.getIntentName() + IS
+            + droid.getDevices().get(intent.getIntentName()).getDeviceReading() + DOT + SPACE + THIS_IS + SPACE
+            + constructTimeSince(droid.getDevices().get(intent.getIntentName()).getReadingTime()) + DOT
+            + SPACE + ASK_OTHER, false);
+      else
         return new Response(intent.getIntentName() + SPACE + DONT_HAVE_READING + SPACE + ASK, false);
-      }
     } catch (InterruptedException | ExecutionException e) {
       Thread.currentThread().interrupt();
       return new Response(NO_DROID + SPACE + BYE, true);
     } catch (FileNotFoundException e) {
       return new Response(NO_DROID + SPACE + BYE, true);
     }
+  }
+
+  private String constructTimeSince(String readingTime) {
+    Instant readingInstant = Instant.parse(readingTime);
+    Duration duration = Duration.between(readingInstant, Instant.now());
+    long seconds = duration.getSeconds();
+    double interval = seconds / 31536000.0;
+    if(interval > 1)
+      return (int) interval + " years ago";
+    interval = seconds / 2592000.0;
+    if(interval > 1)
+      return (int) interval + " months ago";
+    interval = seconds / 86400.0;
+    if(interval > 1)
+      return (int) interval + " days ago";
+    interval = seconds / 3600.0;
+    if(interval > 1)
+      return (int) interval + " hours ago";
+    interval = seconds / 60.0;
+    if(interval > 1)
+      return (int) interval + " minutes ago";
+    return "just now";
   }
 
   private Response handleLaunchIntent(String userId) {
@@ -143,8 +170,7 @@ public class AlexaService {
       Thread.currentThread().interrupt();
       return new Response(NO_DROID + SPACE + BYE, true);
     }
-    return new Response(
-        GREET + SPACE + Arrays.asList(droid.getDroidId().split("")).stream().collect(Collectors.joining(SPACE)) + ", " + ASK,
-        false);
+    return new Response(GREET + SPACE
+        + Arrays.asList(droid.getDroidId().split("")).stream().collect(Collectors.joining(SPACE)) + ", " + ASK, false);
   }
 }

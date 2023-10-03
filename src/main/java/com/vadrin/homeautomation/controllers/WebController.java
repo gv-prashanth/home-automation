@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vadrin.homeautomation.models.DeviceInfo;
 import com.vadrin.homeautomation.models.Droid;
 import com.vadrin.homeautomation.services.DroidService;
 
@@ -21,13 +22,13 @@ public class WebController {
   DroidService droidService;
 
   @GetMapping("/droid/{droidId}/intents")
-  public Map<String, String> getAllIntents(@PathVariable String droidId) {
+  public Map<String, DeviceInfo> getAllIntents(@PathVariable String droidId) {
     try {
       Droid d = droidService.getDroid(droidId.toUpperCase());
-      return d.getIntentsInfo();
+      return d.getDevices();
     } catch (InterruptedException | ExecutionException | FileNotFoundException e) {
       Thread.currentThread().interrupt();
-      return new HashMap<>();
+      return new HashMap<String, DeviceInfo>();
     }
   }
   

@@ -1,6 +1,7 @@
 package com.vadrin.homeautomation.services;
 
 import java.io.FileNotFoundException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.vadrin.homeautomation.models.DeviceInfo;
 import com.vadrin.homeautomation.models.Droid;
 
 
@@ -31,7 +33,7 @@ public class DroidService {
   public void upsertIntent(String droidId, String intentName, String intentReading) throws InterruptedException, ExecutionException, FileNotFoundException {
     System.out.println("upsert request is - " + droidId + " " + intentName + " " + intentReading);
     Droid d = getDroid(droidId);
-    d.getIntentsInfo().put(intentName, intentReading);
+    d.getDevices().put(intentName, new DeviceInfo(intentReading, Instant.now().toString()));
     saveDroid(d);
   }
 
@@ -56,7 +58,7 @@ public class DroidService {
 
   public Droid createNewDroid(String userId) throws InterruptedException, ExecutionException {
     String droidId = String.valueOf((char)(r.nextInt(26) + 'A')) + String.valueOf(r.nextInt(10)) + String.valueOf((char)(r.nextInt(26) + 'A')) + String.valueOf(r.nextInt(10));
-    Map<String, String> toPut = new HashMap<>();
+    Map<String, DeviceInfo> toPut = new HashMap<>();
     Droid toAdd = new Droid(droidId, userId, toPut);
     saveDroid(toAdd);
     return toAdd;

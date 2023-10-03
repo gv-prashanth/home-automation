@@ -1,4 +1,4 @@
-package com.vadrin.homeautomation.models;
+package com.vadrin.homeautomation.models.alexa;
 
 import java.util.Map;
 
