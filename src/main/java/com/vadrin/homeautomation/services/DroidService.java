@@ -2,6 +2,9 @@ package com.vadrin.homeautomation.services;
 
 import java.io.FileNotFoundException;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +45,12 @@ public class DroidService {
     Droid droid = documentFuture.get().toObject(Droid.class);
     if(droid == null)
       throw new FileNotFoundException();
-    else
+    else {
+      //Add the two default devices for every droid. Clock & Calendar
+      droid.getDevices().put("Clock", new DeviceInfo("at "+Instant.now().atZone(ZoneId.of("Asia/Kolkata")).toLocalTime().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)), Instant.now().toString()));
+      droid.getDevices().put("Calendar", new DeviceInfo("at "+Instant.now().atZone(ZoneId.of("Asia/Kolkata")).toLocalDate().format(DateTimeFormatter.ofPattern("E, MMM d, y")), Instant.now().toString()));
       return droid;
+    }
   }
   
   public Droid getDroidForUser(String userId) throws InterruptedException, ExecutionException, FileNotFoundException {
