@@ -5,7 +5,10 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,6 +52,18 @@ public class DroidService {
       //Add the two default devices for every droid. Clock & Calendar
       droid.getDevices().put("Clock", new DeviceInfo("at "+Instant.now().atZone(ZoneId.of("Asia/Kolkata")).toLocalTime().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)), Instant.now().toString()));
       droid.getDevices().put("Calendar", new DeviceInfo("at "+Instant.now().atZone(ZoneId.of("Asia/Kolkata")).toLocalDate().format(DateTimeFormatter.ofPattern("E, MMM d, y")), Instant.now().toString()));
+          
+      // Sort the LinkedHashMap by readingTime
+      List<Map.Entry<String, DeviceInfo>> sortedList = new ArrayList<>(droid.getDevices().entrySet());
+      Collections.sort(sortedList, (entry1, entry2) -> Instant.parse(entry2.getValue().getReadingTime())
+          .compareTo(Instant.parse((entry1.getValue().getReadingTime()))));
+      // Create a new LinkedHashMap with the sorted entries
+      Map<String, DeviceInfo> sortedLinkedHashMap = new LinkedHashMap<>();
+      for (Map.Entry<String, DeviceInfo> entry : sortedList) {
+        sortedLinkedHashMap.put(entry.getKey(), entry.getValue());
+      }
+      
+      droid.setDevices(sortedLinkedHashMap);
       return droid;
     }
   }
