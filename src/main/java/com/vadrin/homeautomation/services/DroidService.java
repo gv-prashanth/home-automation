@@ -55,8 +55,8 @@ public class DroidService {
           
       // Sort the LinkedHashMap by readingTime
       List<Map.Entry<String, DeviceInfo>> sortedList = new ArrayList<>(droid.getDevices().entrySet());
-      Collections.sort(sortedList, (entry1, entry2) -> Instant.parse(entry2.getValue().getReadingTime())
-          .compareTo(Instant.parse((entry1.getValue().getReadingTime()))));
+      //Collections.sort(sortedList, (entry1, entry2) -> Instant.parse(entry2.getValue().getReadingTime()).compareTo(Instant.parse((entry1.getValue().getReadingTime()))));
+      Collections.sort(sortedList, (entry1, entry2) -> entry1.getKey().compareTo(entry2.getKey()));
       // Create a new LinkedHashMap with the sorted entries
       Map<String, DeviceInfo> sortedLinkedHashMap = new LinkedHashMap<>();
       for (Map.Entry<String, DeviceInfo> entry : sortedList) {
