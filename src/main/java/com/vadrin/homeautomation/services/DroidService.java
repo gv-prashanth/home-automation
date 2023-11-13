@@ -50,8 +50,8 @@ public class DroidService {
       throw new FileNotFoundException();
     else {
       //Add the two default devices for every droid. Clock & Calendar
-      droid.getDevices().put("Clock", new DeviceInfo("at "+Instant.now().atZone(ZoneId.of("Asia/Kolkata")).toLocalTime().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)), Instant.now().toString()));
-      droid.getDevices().put("Calendar", new DeviceInfo("at "+Instant.now().atZone(ZoneId.of("Asia/Kolkata")).toLocalDate().format(DateTimeFormatter.ofPattern("E, MMM d, y")), Instant.now().toString()));
+      //droid.getDevices().put("Clock", new DeviceInfo("at "+Instant.now().atZone(ZoneId.of("Asia/Kolkata")).toLocalTime().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)), Instant.now().toString()));
+      //droid.getDevices().put("Calendar", new DeviceInfo("at "+Instant.now().atZone(ZoneId.of("Asia/Kolkata")).toLocalDate().format(DateTimeFormatter.ofPattern("E, MMM d, y")), Instant.now().toString()));
           
       // Sort the LinkedHashMap by readingTime
       List<Map.Entry<String, DeviceInfo>> sortedList = new ArrayList<>(droid.getDevices().entrySet());
