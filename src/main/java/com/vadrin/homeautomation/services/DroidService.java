@@ -2,10 +2,8 @@ package com.vadrin.homeautomation.services;
 
 import java.io.FileNotFoundException;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -35,12 +33,18 @@ public class DroidService {
   Firestore firestore;
   
   private Random r = new Random();
+  
+  private String[] attentionTerms = {"danger", "error", "shutdown", "dry run", "not receiving"};
 
-  public void upsertIntent(String droidId, String intentName, String intentReading) throws InterruptedException, ExecutionException, FileNotFoundException {
-    System.out.println("upsert request is - " + droidId + " " + intentName + " " + intentReading);
+  public void upsertDevice(String droidId, String deviceName, String deviceReading) throws InterruptedException, ExecutionException, FileNotFoundException {
+    System.out.println("upsert request is - " + droidId + " " + deviceName + " " + deviceReading);
     Droid d = getDroid(droidId);
-    d.getDevices().put(intentName, new DeviceInfo(intentReading, Instant.now().toString()));
+    d.getDevices().put(deviceName, new DeviceInfo(deviceReading, Instant.now().toString(), checkForAttention(deviceReading)));
     saveDroid(d);
+  }
+
+  private boolean checkForAttention(String deviceReading) {
+    return Arrays.asList(attentionTerms).stream().anyMatch(x -> deviceReading.toLowerCase().contains(x.toLowerCase()));
   }
 
   public Droid getDroid(String droidId) throws InterruptedException, ExecutionException, FileNotFoundException {

@@ -1,11 +1,18 @@
 package com.vadrin.homeautomation.models;
 
-import java.time.Instant;
-
 public class DeviceInfo {
 
   private String deviceReading;
   private String readingTime;
+  private boolean inNeedOfAttention;
+
+  public boolean isInNeedOfAttention() {
+    return inNeedOfAttention;
+  }
+
+  public void setInNeedOfAttention(boolean inNeedOfAttention) {
+    this.inNeedOfAttention = inNeedOfAttention;
+  }
 
   public String getDeviceReading() {
     return deviceReading;
@@ -15,10 +22,11 @@ public class DeviceInfo {
     this.deviceReading = deviceReading;
   }
 
-  public DeviceInfo(String deviceReading, String readingTime) {
+  public DeviceInfo(String deviceReading, String readingTime, boolean inNeedOfAttention) {
     super();
     this.deviceReading = deviceReading;
     this.readingTime = readingTime;
+    this.inNeedOfAttention = inNeedOfAttention;
   }
 
   public String getReadingTime() {

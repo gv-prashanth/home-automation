@@ -21,8 +21,9 @@ public class WebController {
   @Autowired
   DroidService droidService;
 
+  //TODO: Someday I need to change this url to /devices
   @GetMapping("/droid/{droidId}/intents")
-  public Map<String, DeviceInfo> getAllIntents(@PathVariable String droidId) {
+  public Map<String, DeviceInfo> getAllDevices(@PathVariable String droidId) {
     try {
       Droid d = droidService.getDroid(droidId.toUpperCase());
       return d.getDevices();
@@ -37,9 +38,10 @@ public class WebController {
     return droidService.createNewDroid(userId).getDroidId();
   }
   
+  //TODO: Someday I need to change this url to upsert/device/
   @GetMapping("/droid/{droidId}/upsert/intent/{intentName}/reading/{intentReading}")
-  public void upsertIntent(@PathVariable String droidId,@PathVariable String intentName,@PathVariable String intentReading) throws FileNotFoundException, InterruptedException, ExecutionException {
-    droidService.upsertIntent(droidId.toUpperCase(), intentName, intentReading);
+  public void upsertDevice(@PathVariable String droidId,@PathVariable String deviceName,@PathVariable String deviceReading) throws FileNotFoundException, InterruptedException, ExecutionException {
+    droidService.upsertDevice(droidId.toUpperCase(), deviceName, deviceReading);
   }
 
 }
