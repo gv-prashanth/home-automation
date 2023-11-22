@@ -39,7 +39,7 @@ public class WebController {
   }
   
   //TODO: Someday I need to change this url to upsert/device/
-  @GetMapping("/droid/{droidId}/upsert/intent/{intentName}/reading/{intentReading}")
+  @GetMapping("/droid/{droidId}/upsert/intent/{deviceName}/reading/{deviceReading}")
   public void upsertDevice(@PathVariable String droidId,@PathVariable String deviceName,@PathVariable String deviceReading) throws FileNotFoundException, InterruptedException, ExecutionException {
     droidService.upsertDevice(droidId.toUpperCase(), deviceName, deviceReading);
   }
