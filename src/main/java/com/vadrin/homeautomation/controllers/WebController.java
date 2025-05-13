@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,6 +43,11 @@ public class WebController {
   @GetMapping("/droid/{droidId}/upsert/intent/{deviceName}/reading/{deviceReading}")
   public void upsertDevice(@PathVariable String droidId,@PathVariable String deviceName,@PathVariable String deviceReading) throws FileNotFoundException, InterruptedException, ExecutionException {
     droidService.upsertDevice(droidId.toUpperCase(), deviceName, deviceReading);
+  }
+  
+  @DeleteMapping("/droid/{droidId}/devices/{deviceName}")
+  public void deleteDevice(@PathVariable String droidId,@PathVariable String deviceName) throws FileNotFoundException, InterruptedException, ExecutionException {
+    droidService.deleteDevice(droidId.toUpperCase(), deviceName);
   }
 
 }

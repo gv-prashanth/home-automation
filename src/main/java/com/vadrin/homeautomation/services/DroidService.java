@@ -93,5 +93,11 @@ public class DroidService {
   private void saveDroid(Droid toAdd) throws InterruptedException, ExecutionException {
     this.firestore.document("DroidRepository/"+toAdd.getDroidId()).set(toAdd).get();
   }
+
+  public void deleteDevice(String droidId, String deviceName) throws FileNotFoundException, InterruptedException, ExecutionException {
+	Droid thisDroid = getDroid(droidId);
+	thisDroid.getDevices().remove(deviceName);
+	saveDroid(thisDroid);
+  }
   
 }

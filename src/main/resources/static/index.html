@@ -1,97 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="ISO-8859-1">
-<title>My Droid Dashboard</title>
-<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-<script>
-function loadHomeName(){
-document.getElementById("homeName").value = localStorage.getItem("homename");
-}
-function timeSince(date) {
-
-	var seconds = Math.floor((new Date() - date) / 1000);
-
-	var interval = seconds / 31536000;
-
-	if (interval > 1) {
-		return Math.floor(interval) + " years ago";
-	}
-	interval = seconds / 2592000;
-	if (interval > 1) {
-		return Math.floor(interval) + " months ago";
-	}
-	interval = seconds / 86400;
-	if (interval > 1) {
-		return Math.floor(interval) + " days ago";
-	}
-	interval = seconds / 3600;
-	if (interval > 1) {
-		return Math.floor(interval) + " hours ago";
-	}
-	interval = seconds / 60;
-	if (interval > 1) {
-		return Math.floor(interval) + " minutes ago";
-	}
-	//return Math.floor(seconds) + "< minute ago";
-	return "just now";
-}
-function loadDoc() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-        	try{
-	        	var myjson = JSON.parse(this.responseText);
-	            let tableHtml = '<table border=2 style="text-align: center; vertical-align: middle; width: 100%;"><tr><th>Device</th><th>Reading</th><th>Time</th></tr>';
-	            for (const key in myjson){
-					tableHtml += '<tr><td>'+key+'</td><td>'+myjson[key].deviceReading+'</td><td>'+timeSince(new Date(myjson[key].readingTime))+'</td></tr>';
-	            }
-	            tableHtml += '</table>';
-	            document.getElementById("resp").innerHTML = tableHtml;
-	            localStorage.setItem("homename", document.getElementById("homeName").value);
-            }catch(err){
-				document.getElementById("resp").innerHTML = '';
-            }
-       }
-    };
-    if(document.getElementById("homeName").value!=''){
-	    xhttp.open("GET", '/droid/'+document.getElementById("homeName").value+'/intents', true);
-	    xhttp.send();
-    }else{
-    	document.getElementById("resp").innerHTML = '';
+  <meta charset="ISO-8859-1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Droid Dashboard</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+  <style>
+    body {
+      background-image: url('/images/background.jpg');
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: cover;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 1em;
     }
-}
-setInterval(function() {
-    loadDoc();
-}, 5000);
-</script>
-<style>
-body {
-	background-image: url('/images/background.jpg');
-	background-repeat: no-repeat;
-	background-attachment: fixed;
-	background-size: 100% 100%;
-	text-align: center;
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    input {
+      height: 40px;
+      width: 90%;
+      max-width: 400px;
+      font-size: 16px;
+      margin: 1em 0;
+      padding: 0 10px;
+      text-align: center;
+    }
+
+.table-container {
+  overflow-x: auto;
+  margin: 1em 0;
 }
 
-input {
-	height: 30px;
-	width: 250px;
-	font-size: 16px;
-	text-align: center;
+@keyframes blink {
+  0% { background-color: grey; }
+  50% { background-color: transparent; }
+  100% { background-color: grey; }
 }
+
+.blink-row {
+  animation: blink 1s ease-in-out 3; /* Blinks 3 times over 3 seconds */
+}
+
 
 table {
-	margin-left: auto;
-	margin-right: auto;
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
 }
-</style>
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+th {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+
+    @media screen and (max-width: 600px) {
+      td, th {
+        font-size: 14px;
+        padding: 8px;
+      }
+    }
+  </style>
+  <script>
+    function deleteDevice(droidId, deviceName) {
+      var xhr = new XMLHttpRequest();
+      var url = '/droid/' + droidId + '/devices/' + deviceName;
+
+      xhr.open('DELETE', url, true);
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            alert('Device deleted successfully');
+            loadDoc();
+          } else {
+            console.error('Failed to delete device. Status:', xhr.status, xhr.statusText);
+          }
+        }
+      };
+
+      xhr.send();
+    }
+
+    function loadHomeName() {
+      document.getElementById("homeName").value = localStorage.getItem("homename");
+    }
+
+    function timeSince(date) {
+      var seconds = Math.floor((new Date() - date) / 1000);
+      var interval = seconds / 31536000;
+      if (interval > 1) return Math.floor(interval) + " years ago";
+      interval = seconds / 2592000;
+      if (interval > 1) return Math.floor(interval) + " months ago";
+      interval = seconds / 86400;
+      if (interval > 1) return Math.floor(interval) + " days ago";
+      interval = seconds / 3600;
+      if (interval > 1) return Math.floor(interval) + " hours ago";
+      interval = seconds / 60;
+      if (interval > 1) return Math.floor(interval) + " minutes ago";
+      return "just now";
+    }
+
+    function loadDoc() {
+    	  var xhttp = new XMLHttpRequest();
+    	  xhttp.onreadystatechange = function () {
+    	    if (this.readyState == 4 && this.status == 200) {
+    	      try {
+    	        var myjson = JSON.parse(this.responseText);
+    	        let tableHtml = '<table><tr><th>Device</th><th>Reading</th><th>Time</th><th>Actions</th></tr>';
+
+    	        for (const key in myjson) {
+    	          const readingTime = timeSince(new Date(myjson[key].readingTime));
+    	          const blinkClass = (readingTime === "just now") ? ' class="blink-row"' : '';  // Always blink when "just now"
+
+    	          tableHtml += '<tr' + blinkClass + '><td>' + key + '</td>' +
+    	            '<td>' + myjson[key].deviceReading + '</td>' +
+    	            '<td>' + readingTime + '</td>' +
+    	            '<td><img src="/images/delete2.ico" alt="Delete" width="16" height="16" style="cursor:pointer;" onclick="deleteDevice(\'' +
+    	            document.getElementById("homeName").value + '\', \'' + key + '\')"></td></tr>';
+    	        }
+
+    	        tableHtml += '</table>';
+    	        document.getElementById("resp").innerHTML = tableHtml;
+    	        localStorage.setItem("homename", document.getElementById("homeName").value);
+    	      } catch (err) {
+    	        document.getElementById("resp").innerHTML = '';
+    	      }
+    	    }
+    	  };
+
+    	  if (document.getElementById("homeName").value !== '') {
+    	    xhttp.open("GET", '/droid/' + document.getElementById("homeName").value + '/intents', true);
+    	    xhttp.send();
+    	  } else {
+    	    document.getElementById("resp").innerHTML = '';
+    	  }
+    	}
+
+
+
+    setInterval(loadDoc, 5000);
+  </script>
 </head>
 <body onload="loadHomeName();loadDoc();">
-	<img alt="logo" src="/images/HomeDroid2Small.png" />
-	<h1>My Droid Dashboard</h1>
-	<input type="text" id="homeName"
-		placeholder="Enter your Droid Name" />
-	<h2 id="resp"></h2>
+  <img alt="logo" src="/images/HomeDroid2Small.png" />
+  <h1>My Droid Dashboard</h1>
+  <input type="text" id="homeName" placeholder="Enter your Droid Name" />
+  <div class="table-container">
+    <div id="resp"></div>
+  </div>
 </body>
 </html>
