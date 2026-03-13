@@ -17,24 +17,150 @@
       padding: 1em;
     }
 
-    img {
-      max-width: 100%;
-      height: auto;
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 1em;
     }
 
-    input {
-      height: 40px;
-      width: 90%;
-      max-width: 400px;
+    .header img {
+      height: 55px;
+      width: auto;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.7em;
+      white-space: nowrap;
+    }
+
+    .tab-bar {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      overflow-x: auto;
+      background: none;
+      padding: 0;
+    }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      color: #aaa;
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid #555;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      white-space: nowrap;
       font-size: 16px;
-      margin: 1em 0;
-      padding: 0 10px;
+      margin-left: -1px;
+    }
+
+    .tab:first-child {
+      margin-left: 0;
+    }
+
+    .tab:hover {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .tab.active {
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      border-bottom: 1px solid transparent;
+      font-weight: bold;
+    }
+
+    .tab .tab-close {
+      font-size: 13px;
+      color: #888;
+      cursor: pointer;
+      margin-left: 2px;
+      line-height: 1;
+    }
+
+    .tab .tab-close:hover {
+      color: #f44;
+    }
+
+    .tab-add {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      color: #aaa;
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid #555;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      font-size: 16px;
+      margin-left: auto;
+    }
+
+    .tab-add:hover {
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+    }
+
+    .add-form {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      margin-left: -1px;
+      padding: 4px 8px;
+      border: 1px solid #555;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .add-form.visible {
+      display: flex;
+    }
+
+    .add-form input {
+      height: 26px;
+      width: 100px;
+      font-size: 13px;
+      padding: 0 6px;
+      border-radius: 3px;
+      border: 1px solid #777;
       text-align: center;
+      text-transform: uppercase;
+    }
+
+    .add-form button {
+      height: 28px;
+      padding: 0 8px;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 3px;
+      border: 1px solid #777;
+      background-color: rgba(255, 255, 255, 0.15);
+      color: white;
+    }
+
+    .add-form button:hover {
+      background-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .no-droids {
+      padding: 2em;
+      color: #ccc;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 0 0 6px 6px;
+      font-size: 1.1em;
     }
 
 .table-container {
   overflow-x: auto;
-  margin: 1em 0;
+  margin: 0;
 }
 
 @keyframes blink {
@@ -44,9 +170,8 @@
 }
 
 .blink-row {
-  animation: blink 1s ease-in-out 3; /* Blinks 3 times over 3 seconds */
+  animation: blink 1s ease-in-out 3;
 }
-
 
 table {
   width: 100%;
@@ -65,6 +190,108 @@ th {
   background-color: rgba(0, 0, 0, 0.7);
 }
 
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.75);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background-color: rgba(0, 0, 0, 0.85);
+      color: white;
+      border: 1px solid #555;
+      border-radius: 10px;
+      padding: 2em;
+      width: 90%;
+      max-width: 700px;
+      text-align: left;
+      position: relative;
+    }
+
+    .modal-card h2 {
+      margin-top: 0;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 16px;
+      font-size: 1.5em;
+      color: #ccc;
+      cursor: pointer;
+      background: none;
+      border: none;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: white;
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1em;
+      text-align: center;
+    }
+
+    .modal-field-label {
+      font-size: 0.8em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #aaa;
+      margin-bottom: 0.3em;
+    }
+
+    .modal-field-value {
+      font-size: 1.1em;
+    }
+
+    .attention-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.85em;
+      font-weight: bold;
+    }
+
+    .attention-yes {
+      background-color: #d32f2f;
+      color: #fff;
+    }
+
+    .attention-no {
+      background-color: #388e3c;
+      color: #fff;
+    }
+
+    .delete-btn {
+      padding: 8px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid #d32f2f;
+      background-color: rgba(0, 0, 0, 0.3);
+      color: #d32f2f;
+    }
+
+    .delete-btn:hover {
+      background-color: #d32f2f;
+      color: #fff;
+    }
 
     @media screen and (max-width: 600px) {
       td, th {
@@ -72,8 +299,128 @@ th {
         padding: 8px;
       }
     }
+
+    @media screen and (max-width: 480px) {
+      .modal-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
   </style>
   <script>
+    var droids = [];
+    var activeDroid = null;
+
+    function saveDroids() {
+      localStorage.setItem("droids", JSON.stringify(droids));
+      localStorage.setItem("activeDroid", activeDroid || "");
+    }
+
+    function loadDroids() {
+      try {
+        var stored = localStorage.getItem("droids");
+        droids = stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        droids = [];
+      }
+
+      var legacy = localStorage.getItem("homename");
+      if (droids.length === 0 && legacy) {
+        droids.push(legacy);
+      }
+
+      activeDroid = localStorage.getItem("activeDroid") || (droids.length > 0 ? droids[0] : null);
+      if (activeDroid && droids.indexOf(activeDroid) === -1) {
+        activeDroid = droids.length > 0 ? droids[0] : null;
+      }
+      saveDroids();
+    }
+
+    function renderTabs() {
+      var bar = document.getElementById("tab-bar");
+      var html = '';
+
+      for (var i = 0; i < droids.length; i++) {
+        var id = droids[i];
+        var cls = (id === activeDroid) ? 'tab active' : 'tab';
+        html += '<div class="' + cls + '" onclick="switchTab(\'' + escapeAttr(id) + '\')">';
+        html += escapeHtml(id);
+        html += ' <span class="tab-close" onclick="event.stopPropagation();removeTab(\'' + escapeAttr(id) + '\')">&times;</span>';
+        html += '</div>';
+      }
+
+      html += '<button class="tab-add" onclick="showAddForm();">+</button>';
+      html += '<div id="add-form" class="add-form">';
+      html += '<input type="text" id="new-droid-input" placeholder="Droid ID" onkeydown="addDroidOnEnter(event);" />';
+      html += '<button onclick="addDroid();">Add</button>';
+      html += '<button onclick="hideAddForm();">Cancel</button>';
+      html += '</div>';
+
+      bar.innerHTML = html;
+      renderContent();
+    }
+
+    function switchTab(id) {
+      activeDroid = id;
+      saveDroids();
+      renderTabs();
+      loadDoc();
+    }
+
+    function showAddForm() {
+      document.getElementById("add-form").classList.add("visible");
+      var input = document.getElementById("new-droid-input");
+      input.value = '';
+      input.focus();
+    }
+
+    function hideAddForm() {
+      document.getElementById("add-form").classList.remove("visible");
+    }
+
+    function addDroid() {
+      var input = document.getElementById("new-droid-input");
+      var id = input.value.trim().toUpperCase();
+      if (!id) return;
+      if (droids.indexOf(id) !== -1) {
+        activeDroid = id;
+      } else {
+        droids.push(id);
+        activeDroid = id;
+      }
+      saveDroids();
+      hideAddForm();
+      renderTabs();
+      loadDoc();
+    }
+
+    function addDroidOnEnter(e) {
+      if (e.key === 'Enter') addDroid();
+      if (e.key === 'Escape') hideAddForm();
+    }
+
+    function removeTab(id) {
+      var idx = droids.indexOf(id);
+      if (idx === -1) return;
+      droids.splice(idx, 1);
+      if (activeDroid === id) {
+        if (droids.length > 0) {
+          activeDroid = droids[Math.min(idx, droids.length - 1)];
+        } else {
+          activeDroid = null;
+        }
+      }
+      saveDroids();
+      renderTabs();
+      loadDoc();
+    }
+
+    function renderContent() {
+      if (droids.length === 0 || !activeDroid) {
+        document.getElementById("resp").innerHTML =
+          '<div class="no-droids">Click <b>+</b> to add a Droid ID</div>';
+      }
+    }
+
     function deleteDevice(droidId, deviceName) {
       var xhr = new XMLHttpRequest();
       var url = '/droid/' + droidId + '/devices/' + deviceName;
@@ -83,7 +430,7 @@ th {
       xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
           if (xhr.status >= 200 && xhr.status < 300) {
-            alert('Device deleted successfully');
+            closeDeviceModal();
             loadDoc();
           } else {
             console.error('Failed to delete device. Status:', xhr.status, xhr.statusText);
@@ -92,10 +439,6 @@ th {
       };
 
       xhr.send();
-    }
-
-    function loadHomeName() {
-      document.getElementById("homeName").value = localStorage.getItem("homename");
     }
 
     function timeSince(date) {
@@ -114,52 +457,125 @@ th {
     }
 
     function loadDoc() {
-    	  var xhttp = new XMLHttpRequest();
-    	  xhttp.onreadystatechange = function () {
-    	    if (this.readyState == 4 && this.status == 200) {
-    	      try {
-    	        var myjson = JSON.parse(this.responseText);
-    	        let tableHtml = '<table><tr><th>Device</th><th>Reading</th><th>Time</th><th>Actions</th></tr>';
+      if (!activeDroid) {
+        renderContent();
+        return;
+      }
 
-    	        for (const key in myjson) {
-    	          const readingTime = timeSince(new Date(myjson[key].readingTime));
-    	          const blinkClass = (readingTime === "just now") ? ' class="blink-row"' : '';  // Always blink when "just now"
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          try {
+            var myjson = JSON.parse(this.responseText);
+            var tableHtml = '<table><tr><th>Device</th><th>Reading</th><th>Time</th></tr>';
 
-    	          tableHtml += '<tr' + blinkClass + '><td>' + key + '</td>' +
-    	            '<td>' + myjson[key].deviceReading + '</td>' +
-    	            '<td>' + readingTime + '</td>' +
-    	            '<td><img src="/images/delete2.ico" alt="Delete" width="16" height="16" style="cursor:pointer;" onclick="deleteDevice(\'' +
-    	            document.getElementById("homeName").value + '\', \'' + key + '\')"></td></tr>';
-    	        }
+            for (var key in myjson) {
+              var readingTime = timeSince(new Date(myjson[key].readingTime));
+              var blinkClass = (readingTime === "just now") ? ' class="blink-row"' : '';
 
-    	        tableHtml += '</table>';
-    	        document.getElementById("resp").innerHTML = tableHtml;
-    	        localStorage.setItem("homename", document.getElementById("homeName").value);
-    	      } catch (err) {
-    	        document.getElementById("resp").innerHTML = '';
-    	      }
-    	    }
-    	  };
+              tableHtml += '<tr' + blinkClass + '><td><a href="#" style="color:white;text-decoration:underline;cursor:pointer;" onmouseover="this.style.opacity=\'0.7\'" onmouseout="this.style.opacity=\'1\'" onclick="openDeviceModal(\'' + encodeURIComponent(key) + '\');return false;">' + escapeHtml(key) + '</a></td>' +
+                '<td>' + escapeHtml(myjson[key].deviceReading) + '</td>' +
+                '<td>' + escapeHtml(readingTime) + '</td></tr>';
+            }
 
-    	  if (document.getElementById("homeName").value !== '') {
-    	    xhttp.open("GET", '/droid/' + document.getElementById("homeName").value + '/intents', true);
-    	    xhttp.send();
-    	  } else {
-    	    document.getElementById("resp").innerHTML = '';
-    	  }
-    	}
+            tableHtml += '</table>';
+            document.getElementById("resp").innerHTML = tableHtml;
+          } catch (err) {
+            document.getElementById("resp").innerHTML = '';
+          }
+        }
+      };
 
+      xhttp.open("GET", '/droid/' + encodeURIComponent(activeDroid) + '/intents', true);
+      xhttp.send();
+    }
 
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function escapeAttr(text) {
+      return text.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+
+    function openDeviceModal(encodedDeviceName) {
+      var deviceName = decodeURIComponent(encodedDeviceName);
+      var droidId = activeDroid;
+      if (!droidId) return;
+
+      var content = document.getElementById("modal-content");
+      content.innerHTML = '<h2>Loading...</h2>';
+      document.getElementById("device-modal").classList.add("active");
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/droid/' + encodeURIComponent(droidId) + '/devices/' + encodeURIComponent(deviceName), true);
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              if (!data.deviceReading) {
+                content.innerHTML = '<h2>Device not found</h2>';
+                return;
+              }
+              renderModal(droidId, deviceName, data);
+            } catch (err) {
+              content.innerHTML = '<h2>Failed to load device</h2>';
+            }
+          } else {
+            content.innerHTML = '<h2>Failed to load device</h2>';
+          }
+        }
+      };
+      xhr.send();
+    }
+
+    function renderModal(droidId, deviceName, data) {
+      var attentionClass = data.inNeedOfAttention ? 'attention-yes' : 'attention-no';
+      var attentionText = data.inNeedOfAttention ? 'Yes' : 'No';
+      var readingTime = timeSince(new Date(data.readingTime));
+
+      var html = '<h2>' + escapeHtml(deviceName) + '</h2>';
+      html += '<div class="modal-grid">';
+      html += '<div><div class="modal-field-label">Droid ID</div><div class="modal-field-value">' + escapeHtml(droidId) + '</div></div>';
+      html += '<div><div class="modal-field-label">Current Reading</div><div class="modal-field-value">' + escapeHtml(data.deviceReading) + '</div></div>';
+      html += '<div><div class="modal-field-label">Last Updated</div><div class="modal-field-value">' + escapeHtml(readingTime) + '</div></div>';
+      html += '<div><div class="modal-field-label">Needs Attention</div><div class="modal-field-value"><span class="attention-badge ' + attentionClass + '">' + attentionText + '</span></div></div>';
+      html += '</div>';
+      html += '<div style="text-align:center;margin-top:1.5em;"><button class="delete-btn" onclick="deleteDevice(\'' + escapeAttr(droidId) + '\', \'' + escapeAttr(deviceName) + '\')">Delete Device</button></div>';
+
+      document.getElementById("modal-content").innerHTML = html;
+    }
+
+    function closeDeviceModal() {
+      document.getElementById("device-modal").classList.remove("active");
+    }
+
+    function init() {
+      loadDroids();
+      renderTabs();
+      loadDoc();
+    }
 
     setInterval(loadDoc, 5000);
   </script>
 </head>
-<body onload="loadHomeName();loadDoc();">
-  <img alt="logo" src="/images/HomeDroid2Small.png" />
-  <h1>My Droid Dashboard</h1>
-  <input type="text" id="homeName" placeholder="Enter your Droid Name" />
+<body onload="init();">
+  <div class="header">
+    <img alt="logo" src="/images/HomeDroid2Small.png" />
+    <h1>My Droid Dashboard</h1>
+  </div>
+  <div class="tab-bar" id="tab-bar"></div>
   <div class="table-container">
     <div id="resp"></div>
+  </div>
+  <div id="device-modal" class="modal-overlay" onclick="if(event.target===this)closeDeviceModal();">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeDeviceModal();">&times;</button>
+      <div id="modal-content"></div>
+    </div>
   </div>
 </body>
 </html>

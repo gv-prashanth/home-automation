@@ -16,6 +16,7 @@ import com.vadrin.homeautomation.models.DeviceInfo;
 import com.vadrin.homeautomation.models.Droid;
 import com.vadrin.homeautomation.services.DroidService;
 
+
 @RestController
 public class WebController {
   
@@ -45,6 +46,13 @@ public class WebController {
     droidService.upsertDevice(droidId.toUpperCase(), deviceName, deviceReading);
   }
   
+  @GetMapping("/droid/{droidId}/devices/{deviceName}")
+  public DeviceInfo getDevice(@PathVariable String droidId, @PathVariable String deviceName) throws FileNotFoundException, InterruptedException, ExecutionException {
+    Droid d = droidService.getDroid(droidId.toUpperCase());
+    DeviceInfo info = d.getDevices().get(deviceName);
+    return info;
+  }
+
   @DeleteMapping("/droid/{droidId}/devices/{deviceName}")
   public void deleteDevice(@PathVariable String droidId,@PathVariable String deviceName) throws FileNotFoundException, InterruptedException, ExecutionException {
     droidService.deleteDevice(droidId.toUpperCase(), deviceName);
