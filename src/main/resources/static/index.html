@@ -577,13 +577,16 @@ tr:last-child td {
         sortAsc = !sortAsc;
       } else {
         sortColumn = column;
-        sortAsc = true;
+        sortAsc = (column === 'time') ? false : true;
       }
       loadDoc();
     }
 
     function sortArrow(column) {
       if (sortColumn !== column) return '';
+      if (column === 'time') {
+        return sortAsc ? ' \u25BC' : ' \u25B2';
+      }
       return sortAsc ? ' \u25B2' : ' \u25BC';
     }
 
@@ -607,6 +610,8 @@ tr:last-child td {
               var cmp = 0;
               if (sortColumn === 'device') {
                 cmp = a.name.localeCompare(b.name);
+              } else if (sortColumn === 'reading') {
+                cmp = a.reading.localeCompare(b.reading);
               } else if (sortColumn === 'time') {
                 cmp = a.readingTime.localeCompare(b.readingTime);
               }
@@ -615,7 +620,7 @@ tr:last-child td {
 
             var tableHtml = '<table><tr>';
             tableHtml += '<th class="sortable" onclick="toggleSort(\'device\')">Device' + sortArrow('device') + '</th>';
-            tableHtml += '<th>Reading</th>';
+            tableHtml += '<th class="sortable" onclick="toggleSort(\'reading\')">Reading' + sortArrow('reading') + '</th>';
             tableHtml += '<th class="sortable" onclick="toggleSort(\'time\')">Time' + sortArrow('time') + '</th>';
             tableHtml += '</tr>';
 
