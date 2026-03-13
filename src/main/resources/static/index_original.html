@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="ISO-8859-1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Droid Dashboard</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+  <style>
+    body {
+      background-image: url('/images/background.jpg');
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: cover;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 1em;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 1.5em;
+      padding: 1em 0;
+    }
+
+    .header img {
+      height: 50px;
+      width: auto;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.6em;
+      white-space: nowrap;
+      color: #fff;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8), 0 1px 3px rgba(0, 0, 0, 0.9);
+    }
+
+    .tab-bar {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      overflow-x: auto;
+      background: none;
+      padding: 0;
+      width: 75%;
+      margin: 0 auto;
+    }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 54px;
+      color: #aaa;
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid #555;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 16px;
+      margin-left: -1px;
+      position: relative;
+    }
+
+    .tab:first-child {
+      margin-left: 0;
+    }
+
+    .tab:hover {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .tab.active {
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      border-bottom: 1px solid transparent;
+      font-weight: bold;
+    }
+
+    .tab .tab-close {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: #888;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .tab .tab-close:hover {
+      color: #f44;
+    }
+
+    .tab-add {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      color: #aaa;
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid #555;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      font-size: 22px;
+      margin-left: -1px;
+    }
+
+    .tab-add:hover {
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+    }
+
+    .tab-settings {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      color: #aaa;
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid #555;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      font-size: 18px;
+      margin-left: auto;
+    }
+
+    .tab-settings:hover,
+    .tab-settings.open {
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+    }
+
+    .settings-panel {
+      display: none;
+      position: fixed;
+      min-width: 180px;
+      background-color: rgba(0, 0, 0, 0.9);
+      border: 1px solid #555;
+      border-radius: 0 0 8px 8px;
+      padding: 8px 0;
+      z-index: 1000;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+
+    .settings-panel.open {
+      display: block;
+    }
+
+    .settings-panel-header {
+      font-size: 0.75em;
+      letter-spacing: 1px;
+      color: #888;
+      text-transform: uppercase;
+      padding: 6px 14px 8px;
+      border-bottom: 1px solid #444;
+      margin-bottom: 4px;
+    }
+
+    .settings-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      color: #ccc;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .settings-item:hover {
+      color: #fff;
+      background-color: rgba(255,255,255,0.1);
+    }
+
+    .settings-item-icon {
+      font-size: 15px;
+      width: 18px;
+      text-align: center;
+    }
+
+    .add-form {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      margin-left: -1px;
+      padding: 4px 8px;
+      border: 1px solid #555;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .add-form.visible {
+      display: flex;
+    }
+
+    .add-form input {
+      height: 26px;
+      width: 100px;
+      font-size: 13px;
+      padding: 0 6px;
+      border-radius: 3px;
+      border: 1px solid #777;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .add-form button {
+      height: 28px;
+      padding: 0 8px;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 3px;
+      border: 1px solid #777;
+      background-color: rgba(255, 255, 255, 0.15);
+      color: white;
+    }
+
+    .add-form button:hover {
+      background-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .no-droids {
+      padding: 2em;
+      color: #ccc;
+      font-size: 1.1em;
+    }
+
+.table-container {
+  overflow: hidden;
+  width: 75%;
+  margin: 0 auto;
+  border-radius: 0 0 10px 10px;
+  border: 1px solid #555;
+  border-top: none;
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+@keyframes blink {
+  0% { background-color: rgba(255, 255, 255, 0.25); }
+  50% { background-color: transparent; }
+  100% { background-color: rgba(255, 255, 255, 0.25); }
+}
+
+.blink-row {
+  animation: blink 1s ease-in-out 3;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  color: white;
+  table-layout: fixed;
+  font-size: 1.1em;
+}
+
+th, td {
+  border-bottom: 1px solid #555;
+  padding: 14px 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+th:nth-child(1), td:nth-child(1) { width: 30%; }
+th:nth-child(2), td:nth-child(2) { width: 45%; }
+th:nth-child(3), td:nth-child(3) { width: 25%; }
+
+th {
+  background-color: rgba(0, 0, 0, 0.3);
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #ddd;
+  font-weight: bold;
+}
+
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+th.sortable:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.75);
+      z-index: 1000;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-y: auto;
+      padding: 2em 0;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background-color: rgba(0, 0, 0, 0.85);
+      color: white;
+      border: 1px solid #555;
+      border-radius: 10px;
+      padding: 2em;
+      width: 90%;
+      max-width: 900px;
+      margin: auto;
+      overflow-y: auto;
+      text-align: left;
+      position: relative;
+    }
+
+    .modal-card h2 {
+      margin-top: 0;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 16px;
+      font-size: 1.5em;
+      color: #ccc;
+      cursor: pointer;
+      background: none;
+      border: none;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: white;
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1em;
+      text-align: center;
+    }
+
+    .modal-field-label {
+      font-size: 0.8em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #aaa;
+      margin-bottom: 0.3em;
+    }
+
+    .modal-field-value {
+      font-size: 1.1em;
+    }
+
+    .attention-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.85em;
+      font-weight: bold;
+    }
+
+    .attention-yes {
+      background-color: #d32f2f;
+      color: #fff;
+    }
+
+    .attention-no {
+      background-color: #388e3c;
+      color: #fff;
+    }
+
+    .delete-btn {
+      padding: 8px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid #d32f2f;
+      background-color: rgba(0, 0, 0, 0.3);
+      color: #d32f2f;
+    }
+
+    .delete-btn:hover {
+      background-color: #d32f2f;
+      color: #fff;
+    }
+
+    @media screen and (max-width: 600px) {
+      .tab-bar, .table-container {
+        width: 100%;
+      }
+      table {
+        font-size: 0.95em;
+      }
+      td, th {
+        padding: 10px 8px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .modal-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .history-section {
+      margin-top: 1.5em;
+      border-top: 1px solid #555;
+      padding-top: 1em;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8em;
+    }
+
+    .history-header h3 {
+      margin: 0;
+      font-size: 1em;
+      color: #ccc;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .history-select {
+      background-color: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid #666;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .history-select option {
+      background-color: #222;
+      color: white;
+    }
+
+    .chart-container {
+      background-color: rgba(0,0,0,0.3);
+      border-radius: 6px;
+      padding: 0.8em;
+      margin-bottom: 0.8em;
+    }
+
+    .chart-container canvas {
+      width: 100% !important;
+      max-height: 200px;
+    }
+
+    .chart-label {
+      font-size: 0.8em;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.4em;
+    }
+
+    .history-loading {
+      text-align: center;
+      color: #888;
+      padding: 1em;
+    }
+  </style>
+  <script>
+    var droids = [];
+    var activeDroid = null;
+    var sortColumn = 'device';
+    var sortAsc = true;
+
+    function saveDroids() {
+      localStorage.setItem("droids", JSON.stringify(droids));
+      localStorage.setItem("activeDroid", activeDroid || "");
+    }
+
+    function loadDroids() {
+      try {
+        var stored = localStorage.getItem("droids");
+        droids = stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        droids = [];
+      }
+
+      var legacy = localStorage.getItem("homename");
+      if (droids.length === 0 && legacy) {
+        droids.push(legacy);
+      }
+
+      activeDroid = localStorage.getItem("activeDroid") || (droids.length > 0 ? droids[0] : null);
+      if (activeDroid && droids.indexOf(activeDroid) === -1) {
+        activeDroid = droids.length > 0 ? droids[0] : null;
+      }
+      saveDroids();
+    }
+
+    function renderTabs() {
+      var bar = document.getElementById("tab-bar");
+      var html = '';
+
+      for (var i = 0; i < droids.length; i++) {
+        var id = droids[i];
+        var cls = (id === activeDroid) ? 'tab active' : 'tab';
+        html += '<div class="' + cls + '" onclick="switchTab(\'' + escapeAttr(id) + '\')">';
+        html += escapeHtml(id);
+        html += ' <span class="tab-close" onclick="event.stopPropagation();removeTab(\'' + escapeAttr(id) + '\')">&times;</span>';
+        html += '</div>';
+      }
+
+      html += '<button class="tab-add" onclick="showAddForm();">+</button>';
+      html += '<div id="add-form" class="add-form">';
+      html += '<input type="text" id="new-droid-input" placeholder="Droid ID" onkeydown="addDroidOnEnter(event);" />';
+      html += '<button onclick="addDroid();">Add</button>';
+      html += '<button onclick="hideAddForm();">Cancel</button>';
+      html += '</div>';
+
+      html += '<div class="tab-settings" id="settings-btn" onclick="toggleSettings(event);" title="Settings">&#9881;</div>';
+
+      bar.innerHTML = html;
+      renderContent();
+    }
+
+    function switchTab(id) {
+      activeDroid = id;
+      saveDroids();
+      renderTabs();
+      loadDoc();
+    }
+
+    function showAddForm() {
+      document.getElementById("add-form").classList.add("visible");
+      var input = document.getElementById("new-droid-input");
+      input.value = '';
+      input.focus();
+    }
+
+    function hideAddForm() {
+      document.getElementById("add-form").classList.remove("visible");
+    }
+
+    function toggleSettings(e) {
+      e.stopPropagation();
+      var btn = document.getElementById("settings-btn");
+      var panel = document.getElementById("settings-panel");
+      var isOpen = panel.classList.contains("open");
+      if (isOpen) {
+        panel.classList.remove("open");
+        btn.classList.remove("open");
+        return;
+      }
+      var rect = btn.getBoundingClientRect();
+      panel.style.top = rect.bottom + 'px';
+      panel.style.right = (window.innerWidth - rect.right) + 'px';
+      panel.classList.add("open");
+      btn.classList.add("open");
+      var closer = function(ev) {
+        if (!btn.contains(ev.target) && !panel.contains(ev.target)) {
+          panel.classList.remove("open");
+          btn.classList.remove("open");
+          document.removeEventListener("click", closer);
+        }
+      };
+      setTimeout(function() { document.addEventListener("click", closer); }, 0);
+    }
+
+    function addDroid() {
+      var input = document.getElementById("new-droid-input");
+      var id = input.value.trim().toUpperCase();
+      if (!id) return;
+      if (droids.indexOf(id) !== -1) {
+        activeDroid = id;
+      } else {
+        droids.push(id);
+        activeDroid = id;
+      }
+      saveDroids();
+      hideAddForm();
+      renderTabs();
+      loadDoc();
+    }
+
+    function addDroidOnEnter(e) {
+      if (e.key === 'Enter') addDroid();
+      if (e.key === 'Escape') hideAddForm();
+    }
+
+    function removeTab(id) {
+      var idx = droids.indexOf(id);
+      if (idx === -1) return;
+      droids.splice(idx, 1);
+      if (activeDroid === id) {
+        if (droids.length > 0) {
+          activeDroid = droids[Math.min(idx, droids.length - 1)];
+        } else {
+          activeDroid = null;
+        }
+      }
+      saveDroids();
+      renderTabs();
+      loadDoc();
+    }
+
+    function renderContent() {
+      if (droids.length === 0 || !activeDroid) {
+        document.getElementById("resp").innerHTML =
+          '<div class="no-droids">Click <b>+</b> to add a Droid ID</div>';
+      }
+    }
+
+    function deleteDevice(droidId, deviceName) {
+      var xhr = new XMLHttpRequest();
+      var url = '/droid/' + droidId + '/devices/' + deviceName;
+
+      xhr.open('DELETE', url, true);
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            closeDeviceModal();
+            loadDoc();
+          } else {
+            console.error('Failed to delete device. Status:', xhr.status, xhr.statusText);
+          }
+        }
+      };
+
+      xhr.send();
+    }
+
+    function timeSince(date) {
+      var seconds = Math.floor((new Date() - date) / 1000);
+      var interval = seconds / 31536000;
+      if (interval > 1) return Math.floor(interval) + " years ago";
+      interval = seconds / 2592000;
+      if (interval > 1) return Math.floor(interval) + " months ago";
+      interval = seconds / 86400;
+      if (interval > 1) return Math.floor(interval) + " days ago";
+      interval = seconds / 3600;
+      if (interval > 1) return Math.floor(interval) + " hours ago";
+      interval = seconds / 60;
+      if (interval > 1) return Math.floor(interval) + " minutes ago";
+      return "just now";
+    }
+
+    function toggleSort(column) {
+      if (sortColumn === column) {
+        sortAsc = !sortAsc;
+      } else {
+        sortColumn = column;
+        sortAsc = (column === 'time') ? false : true;
+      }
+      loadDoc();
+    }
+
+    function sortArrow(column) {
+      if (sortColumn !== column) return '';
+      if (column === 'time') {
+        return sortAsc ? ' \u25BC' : ' \u25B2';
+      }
+      return sortAsc ? ' \u25B2' : ' \u25BC';
+    }
+
+    function loadDoc() {
+      if (!activeDroid) {
+        renderContent();
+        return;
+      }
+
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          try {
+            var myjson = JSON.parse(this.responseText);
+            var entries = [];
+            for (var key in myjson) {
+              entries.push({ name: key, reading: myjson[key].deviceReading, readingTime: myjson[key].readingTime, raw: myjson[key] });
+            }
+
+            entries.sort(function(a, b) {
+              var cmp = 0;
+              if (sortColumn === 'device') {
+                cmp = a.name.localeCompare(b.name);
+              } else if (sortColumn === 'reading') {
+                cmp = a.reading.localeCompare(b.reading);
+              } else if (sortColumn === 'time') {
+                cmp = a.readingTime.localeCompare(b.readingTime);
+              }
+              return sortAsc ? cmp : -cmp;
+            });
+
+            var tableHtml = '<table><tr>';
+            tableHtml += '<th class="sortable" onclick="toggleSort(\'device\')">Device' + sortArrow('device') + '</th>';
+            tableHtml += '<th class="sortable" onclick="toggleSort(\'reading\')">Reading' + sortArrow('reading') + '</th>';
+            tableHtml += '<th class="sortable" onclick="toggleSort(\'time\')">Time' + sortArrow('time') + '</th>';
+            tableHtml += '</tr>';
+
+            for (var i = 0; i < entries.length; i++) {
+              var e = entries[i];
+              var readingTime = timeSince(new Date(e.readingTime));
+              var blinkClass = (readingTime === "just now") ? ' class="blink-row"' : '';
+
+              tableHtml += '<tr' + blinkClass + '><td><a href="#" style="color:white;text-decoration:underline;cursor:pointer;" onmouseover="this.style.opacity=\'0.7\'" onmouseout="this.style.opacity=\'1\'" onclick="openDeviceModal(\'' + encodeURIComponent(e.name) + '\');return false;">' + escapeHtml(e.name) + '</a></td>' +
+                '<td>' + escapeHtml(e.reading) + '</td>' +
+                '<td>' + escapeHtml(readingTime) + '</td></tr>';
+            }
+
+            tableHtml += '</table>';
+            document.getElementById("resp").innerHTML = tableHtml;
+          } catch (err) {
+            document.getElementById("resp").innerHTML = '';
+          }
+        }
+      };
+
+      xhttp.open("GET", '/droid/' + encodeURIComponent(activeDroid) + '/intents', true);
+      xhttp.send();
+    }
+
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function escapeAttr(text) {
+      return text.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+
+    function openDeviceModal(encodedDeviceName) {
+      var deviceName = decodeURIComponent(encodedDeviceName);
+      var droidId = activeDroid;
+      if (!droidId) return;
+
+      var content = document.getElementById("modal-content");
+      content.innerHTML = '<h2>Loading...</h2>';
+      document.getElementById("device-modal").classList.add("active");
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/droid/' + encodeURIComponent(droidId) + '/devices/' + encodeURIComponent(deviceName), true);
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              if (!data.deviceReading) {
+                content.innerHTML = '<h2>Device not found</h2>';
+                return;
+              }
+              renderModal(droidId, deviceName, data);
+            } catch (err) {
+              content.innerHTML = '<h2>Failed to load device</h2>';
+            }
+          } else {
+            content.innerHTML = '<h2>Failed to load device</h2>';
+          }
+        }
+      };
+      xhr.send();
+    }
+
+    var activeCharts = [];
+
+    function renderModal(droidId, deviceName, data) {
+      var attentionClass = data.inNeedOfAttention ? 'attention-yes' : 'attention-no';
+      var attentionText = data.inNeedOfAttention ? 'Yes' : 'No';
+      var readingTime = timeSince(new Date(data.readingTime));
+
+      var html = '<h2>' + escapeHtml(deviceName) + '</h2>';
+      html += '<div class="modal-grid">';
+      html += '<div><div class="modal-field-label">Droid ID</div><div class="modal-field-value">' + escapeHtml(droidId) + '</div></div>';
+      html += '<div><div class="modal-field-label">Current Reading</div><div class="modal-field-value">' + escapeHtml(data.deviceReading) + '</div></div>';
+      html += '<div><div class="modal-field-label">Last Updated</div><div class="modal-field-value">' + escapeHtml(readingTime) + '</div></div>';
+      html += '<div><div class="modal-field-label">Needs Attention</div><div class="modal-field-value"><span class="attention-badge ' + attentionClass + '">' + attentionText + '</span></div></div>';
+      html += '</div>';
+
+      html += '<div class="history-section">';
+      html += '<div class="history-header">';
+      html += '<h3>History</h3>';
+      html += '<select class="history-select" id="history-hours" onchange="loadHistory(\'' + escapeAttr(droidId) + '\', \'' + escapeAttr(deviceName) + '\')">';
+      html += '<option value="6">6 Hours</option>';
+      html += '<option value="12">12 Hours</option>';
+      html += '<option value="24" selected>24 Hours</option>';
+      html += '<option value="48">48 Hours</option>';
+      html += '</select>';
+      html += '</div>';
+      html += '<div id="history-charts"><div class="history-loading">Loading history...</div></div>';
+      html += '</div>';
+
+      html += '<div style="text-align:center;margin-top:1.5em;"><button class="delete-btn" onclick="deleteDevice(\'' + escapeAttr(droidId) + '\', \'' + escapeAttr(deviceName) + '\')">Delete Device</button></div>';
+
+      document.getElementById("modal-content").innerHTML = html;
+      loadHistory(droidId, deviceName);
+    }
+
+    function loadHistory(droidId, deviceName) {
+      var hours = document.getElementById("history-hours").value;
+      var container = document.getElementById("history-charts");
+      container.innerHTML = '<div class="history-loading">Loading history...</div>';
+      destroyCharts();
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/droid/' + encodeURIComponent(droidId) + '/devices/' + encodeURIComponent(deviceName) + '/history?hours=' + hours, true);
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              var historyData = JSON.parse(xhr.responseText);
+              renderHistoryCharts(container, historyData);
+            } catch (err) {
+              container.innerHTML = '<div class="history-loading">Failed to load history</div>';
+            }
+          } else {
+            container.innerHTML = '<div class="history-loading">No history available</div>';
+          }
+        }
+      };
+      xhr.send();
+    }
+
+    function destroyCharts() {
+      for (var i = 0; i < activeCharts.length; i++) {
+        activeCharts[i].destroy();
+      }
+      activeCharts = [];
+    }
+
+    function parseReadingValue(reading) {
+      if (!reading) return [{ value: null, label: 'Unknown', raw: '', isCategorical: true }];
+      var parts = reading.split(',');
+      var results = [];
+      for (var i = 0; i < parts.length; i++) {
+        var part = parts[i].trim();
+        var numMatch = part.match(/([-+]?\d*\.?\d+)/);
+        if (numMatch) {
+          var numVal = parseFloat(numMatch[1]);
+          var label = part.replace(numMatch[0], '').trim();
+          if (!label) label = 'Value';
+          results.push({ value: numVal, label: label, raw: part, isCategorical: false });
+        } else {
+          var lower = part.toLowerCase();
+          var catVal = null;
+          if (lower === 'off' || lower === 'closed') catVal = 0;
+          else if (lower === 'on' || lower === 'open') catVal = 1;
+
+          if (catVal !== null) {
+            results.push({ value: catVal, label: 'State', raw: part, isCategorical: true });
+          } else {
+            results.push({ value: null, label: part, raw: part, isCategorical: true });
+          }
+        }
+      }
+      return results;
+    }
+
+    function analyzeHistorySeries(history) {
+      if (!history || history.length === 0) return [];
+      var firstParsed = parseReadingValue(history[0].deviceReading);
+      var seriesCount = firstParsed.length;
+      var series = [];
+      for (var s = 0; s < seriesCount; s++) {
+        series.push({ label: firstParsed[s].label, data: [], isCategorical: firstParsed[s].isCategorical });
+      }
+      for (var i = 0; i < history.length; i++) {
+        var parsed = parseReadingValue(history[i].deviceReading);
+        var time = history[i].readingTime;
+        for (var s = 0; s < seriesCount; s++) {
+          if (s < parsed.length && parsed[s].value !== null) {
+            series[s].data.push({ x: time, y: parsed[s].value });
+            if (!parsed[s].isCategorical) series[s].isCategorical = false;
+          } else if (s < parsed.length && parsed[s].isCategorical) {
+            series[s].data.push({ x: time, y: null, label: parsed[s].raw });
+          }
+        }
+      }
+      return series;
+    }
+
+    function renderHistoryCharts(container, history) {
+      if (!history || history.length === 0) {
+        container.innerHTML = '<div class="history-loading">No history data available</div>';
+        return;
+      }
+      var series = analyzeHistorySeries(history);
+      if (series.length === 0) {
+        container.innerHTML = '<div class="history-loading">No history data available</div>';
+        return;
+      }
+      container.innerHTML = '';
+      var chartColors = ['#4fc3f7', '#81c784', '#ffb74d', '#e57373', '#ba68c8', '#4dd0e1'];
+      for (var i = 0; i < series.length; i++) {
+        try {
+          var s = series[i];
+          var validData = s.data.filter(function(d) { return d.y !== null; });
+          if (validData.length === 0) continue;
+          var wrapper = document.createElement('div');
+          wrapper.className = 'chart-container';
+          if (series.length > 1) {
+            var labelDiv = document.createElement('div');
+            labelDiv.className = 'chart-label';
+            labelDiv.textContent = s.label;
+            wrapper.appendChild(labelDiv);
+          }
+          var canvas = document.createElement('canvas');
+          wrapper.appendChild(canvas);
+          container.appendChild(wrapper);
+
+          var color = chartColors[i % chartColors.length];
+          var historyRef = history;
+          var chartConfig = {
+            type: 'line',
+            data: {
+              datasets: [{
+                data: validData,
+                borderColor: color,
+                borderWidth: 2,
+                pointRadius: validData.length > 50 ? 0 : 3,
+                pointHoverRadius: 4,
+                fill: false,
+                tension: s.isCategorical ? 0 : 0.3,
+                stepped: s.isCategorical ? 'before' : false
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      var point = context.raw;
+                      if (point && point.x) {
+                        for (var h = 0; h < historyRef.length; h++) {
+                          if (historyRef[h].readingTime === point.x) return historyRef[h].deviceReading;
+                        }
+                      }
+                      return context.formattedValue;
+                    }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  type: 'time',
+                  time: { tooltipFormat: 'MMM d, HH:mm' },
+                  grid: { color: 'rgba(255,255,255,0.1)' },
+                  ticks: { color: '#aaa', maxTicksLimit: 8 }
+                },
+                y: {
+                  grid: { color: 'rgba(255,255,255,0.1)' },
+                  ticks: {
+                    color: '#aaa',
+                    stepSize: s.isCategorical ? 1 : undefined,
+                    callback: s.isCategorical
+                      ? function(val) { return val === 1 ? 'On' : 'Off'; }
+                      : function(val) { return parseFloat(val.toPrecision(12)); }
+                  },
+                  min: s.isCategorical ? 0 : undefined,
+                  max: s.isCategorical ? 1 : undefined
+                }
+              }
+            }
+          };
+          var chart = new Chart(canvas.getContext('2d'), chartConfig);
+          activeCharts.push(chart);
+        } catch (chartErr) {
+          console.error('Failed to render chart for series ' + i, chartErr);
+        }
+      }
+      if (container.innerHTML === '') {
+        container.innerHTML = '<div class="history-loading">No history data available</div>';
+      }
+    }
+
+    function closeDeviceModal() {
+      destroyCharts();
+      document.getElementById("device-modal").classList.remove("active");
+    }
+
+    function init() {
+      loadDroids();
+      renderTabs();
+      loadDoc();
+    }
+
+    setInterval(loadDoc, 5000);
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body onload="init();">
+  <div class="header">
+    <img alt="logo" src="/images/HomeDroid2Small.png" />
+    <h1>My Droid Dashboard</h1>
+  </div>
+  <div class="tab-bar" id="tab-bar"></div>
+  <div class="settings-panel" id="settings-panel">
+    <div class="settings-panel-header">Settings</div>
+    <a class="settings-item" href="/index.html"><span class="settings-item-icon">&#9733;</span> Star Wars Theme</a>
+  </div>
+  <div class="table-container">
+    <div id="resp"></div>
+  </div>
+  <div id="device-modal" class="modal-overlay" onclick="if(event.target===this)closeDeviceModal();">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeDeviceModal();">&times;</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+</body>
+</html>

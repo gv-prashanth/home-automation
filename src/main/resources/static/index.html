@@ -5,400 +5,952 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Droid Dashboard</title>
   <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      background-image: url('/images/background.jpg');
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      background-size: cover;
-      text-align: center;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 1em;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cyan: #00e5ff;
+      --cyan-dim: #00a0b0;
+      --cyan-glow: rgba(0, 229, 255, 0.4);
+      --blue: #0d47a1;
+      --deep-blue: #0a1628;
+      --panel-bg: rgba(5, 15, 35, 0.55);
+      --panel-border: rgba(0, 229, 255, 0.18);
+      --glass: rgba(10, 22, 50, 0.45);
+      --glass-hover: rgba(0, 229, 255, 0.08);
+      --text-primary: #e0f7fa;
+      --text-secondary: #80deea;
+      --text-dim: #546e7a;
+      --danger: #ff1744;
+      --danger-glow: rgba(255, 23, 68, 0.5);
+      --success: #00e676;
+      --success-glow: rgba(0, 230, 118, 0.5);
+      --amber: #ffab00;
     }
 
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: radial-gradient(ellipse at 20% 50%, #0a1628 0%, #000b18 50%, #000 100%);
+      color: var(--text-primary);
+      font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      text-align: center;
+      padding: 0;
+    }
+
+    /* ── Star field canvas ── */
+    #starfield {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Holographic grid overlay ── */
+    .holo-grid {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(0,229,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      animation: gridDrift 20s linear infinite;
+    }
+
+    @keyframes gridDrift {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(60px, 60px); }
+    }
+
+    /* ── Scanline effect ── */
+    .scanlines {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 2;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 229, 255, 0.008) 2px,
+        rgba(0, 229, 255, 0.008) 4px
+      );
+    }
+
+    .scanlines::after {
+      content: '';
+      position: absolute;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 200%;
+      background: linear-gradient(transparent 0%, rgba(0,229,255,0.03) 50%, transparent 100%);
+      animation: scanMove 8s linear infinite;
+    }
+
+    @keyframes scanMove {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(50%); }
+    }
+
+    /* ── Main wrapper ── */
+    .main-wrapper {
+      position: relative;
+      z-index: 10;
+      padding: 1.5em 1em 3em;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
     .header {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 16px;
+      gap: 20px;
       flex-wrap: wrap;
-      margin-bottom: 1.5em;
-      padding: 1em 0;
+      margin-bottom: 2em;
+      padding: 1.2em 0;
+      animation: headerSlideIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+
+    @keyframes headerSlideIn {
+      0% { opacity: 0; transform: translateY(-40px) scale(0.95); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .header img {
-      height: 50px;
+      height: 56px;
       width: auto;
-      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+      filter: drop-shadow(0 0 16px var(--cyan-glow)) drop-shadow(0 0 6px var(--cyan));
+      animation: logoPulse 3s ease-in-out infinite, logoSpin 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes logoPulse {
+      0%, 100% { filter: drop-shadow(0 0 16px var(--cyan-glow)) drop-shadow(0 0 6px var(--cyan)); }
+      50% { filter: drop-shadow(0 0 24px var(--cyan-glow)) drop-shadow(0 0 12px var(--cyan)) drop-shadow(0 0 40px rgba(0,229,255,0.15)); }
+    }
+
+    @keyframes logoSpin {
+      0% { transform: rotateY(90deg); opacity: 0; }
+      100% { transform: rotateY(0deg); opacity: 1; }
     }
 
     .header h1 {
-      margin: 0;
-      font-size: 1.6em;
-      white-space: nowrap;
-      color: #fff;
-      font-weight: 600;
-      letter-spacing: 2px;
+      font-family: 'Orbitron', monospace;
+      font-size: 1.5em;
+      font-weight: 700;
+      letter-spacing: 6px;
       text-transform: uppercase;
-      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8), 0 1px 3px rgba(0, 0, 0, 0.9);
+      color: var(--cyan);
+      text-shadow:
+        0 0 10px var(--cyan-glow),
+        0 0 30px rgba(0, 229, 255, 0.2),
+        0 0 60px rgba(0, 229, 255, 0.1);
+      animation: titleGlow 4s ease-in-out infinite;
     }
 
+    @keyframes titleGlow {
+      0%, 100% { text-shadow: 0 0 10px var(--cyan-glow), 0 0 30px rgba(0,229,255,0.2); }
+      50% { text-shadow: 0 0 20px var(--cyan-glow), 0 0 50px rgba(0,229,255,0.3), 0 0 80px rgba(0,229,255,0.1); }
+    }
+
+    .subtitle {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.7em;
+      letter-spacing: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      display: block;
+      margin-top: 4px;
+    }
+
+    /* ── Settings button (far right of tab bar) ── */
+    .tab-settings {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      color: var(--text-dim);
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(0,229,255,0.08);
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      cursor: pointer;
+      font-size: 18px;
+      margin-left: auto;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .tab-settings:hover {
+      color: var(--cyan);
+      background: rgba(0, 229, 255, 0.08);
+    }
+
+    .tab-settings.open {
+      color: var(--cyan);
+      background: rgba(0, 229, 255, 0.08);
+      border-color: rgba(0,229,255,0.25);
+    }
+
+    /* ── Settings panel dropdown ── */
+    .settings-panel {
+      display: none;
+      position: fixed;
+      min-width: 200px;
+      background: rgba(5, 15, 40, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(0,229,255,0.2);
+      border-radius: 0 0 10px 10px;
+      padding: 10px 0;
+      z-index: 1000;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 20px rgba(0,229,255,0.05);
+    }
+
+    .settings-panel.open {
+      display: block;
+      animation: settingsReveal 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes settingsReveal {
+      0% { opacity: 0; transform: translateY(-8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .settings-panel-header {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.6em;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      padding: 6px 16px 8px;
+      border-bottom: 1px solid rgba(0,229,255,0.1);
+      margin-bottom: 4px;
+    }
+
+    .settings-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      color: var(--text-secondary);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s;
+    }
+
+    .settings-item:hover {
+      color: var(--cyan);
+      background: rgba(0,229,255,0.06);
+      text-shadow: 0 0 6px var(--cyan-glow);
+    }
+
+    .settings-item-icon {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+    }
+
+    /* ── Glowing border utility ── */
+    .glow-border {
+      border: 1px solid var(--panel-border);
+      box-shadow:
+        inset 0 0 30px rgba(0,229,255,0.03),
+        0 0 15px rgba(0,229,255,0.05);
+    }
+
+    .glow-border:hover {
+      border-color: rgba(0,229,255,0.35);
+      box-shadow:
+        inset 0 0 40px rgba(0,229,255,0.05),
+        0 0 25px rgba(0,229,255,0.1);
+    }
+
+    /* ── Tab bar ── */
     .tab-bar {
       display: flex;
       align-items: stretch;
       gap: 0;
       overflow-x: auto;
-      background: none;
       padding: 0;
-      width: 75%;
+      width: 80%;
       margin: 0 auto;
+      animation: fadeSlideUp 0.8s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
     }
+
+    @keyframes fadeSlideUp {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .tab-bar::-webkit-scrollbar { height: 3px; }
+    .tab-bar::-webkit-scrollbar-track { background: transparent; }
+    .tab-bar::-webkit-scrollbar-thumb { background: var(--cyan-dim); border-radius: 3px; }
 
     .tab {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 10px 54px;
-      color: #aaa;
-      background-color: rgba(0, 0, 0, 0.3);
-      border: 1px solid #555;
+      gap: 8px;
+      padding: 12px 48px;
+      color: var(--text-dim);
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(0,229,255,0.08);
       border-bottom: none;
-      border-radius: 6px 6px 0 0;
+      border-radius: 10px 10px 0 0;
       cursor: pointer;
       white-space: nowrap;
-      font-size: 16px;
+      font-family: 'Orbitron', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
       margin-left: -1px;
       position: relative;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
     }
 
-    .tab:first-child {
-      margin-left: 0;
+    .tab::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      opacity: 0;
+      transition: opacity 0.4s;
     }
+
+    .tab:first-child { margin-left: 0; }
 
     .tab:hover {
-      background-color: rgba(0, 0, 0, 0.5);
+      color: var(--text-secondary);
+      background: rgba(0, 229, 255, 0.06);
     }
 
+    .tab:hover::before { opacity: 0.5; }
+
     .tab.active {
-      background-color: rgba(0, 0, 0, 0.5);
-      color: white;
+      color: var(--cyan);
+      background: rgba(0, 229, 255, 0.08);
+      border-color: rgba(0, 229, 255, 0.25);
       border-bottom: 1px solid transparent;
-      font-weight: bold;
+      font-weight: 700;
+      text-shadow: 0 0 12px var(--cyan-glow);
+    }
+
+    .tab.active::before { opacity: 1; }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 10%;
+      width: 80%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
     }
 
     .tab .tab-close {
       position: absolute;
-      right: 8px;
+      right: 10px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 18px;
-      color: #888;
+      font-size: 16px;
+      color: var(--text-dim);
       cursor: pointer;
       line-height: 1;
+      transition: all 0.3s;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
     }
 
     .tab .tab-close:hover {
-      color: #f44;
+      color: var(--danger);
+      background: rgba(255,23,68,0.15);
+      text-shadow: 0 0 8px var(--danger-glow);
     }
 
     .tab-add {
       display: flex;
       align-items: center;
-      padding: 10px 16px;
-      color: #aaa;
-      background-color: rgba(0, 0, 0, 0.3);
-      border: 1px solid #555;
+      justify-content: center;
+      padding: 12px 18px;
+      color: var(--text-dim);
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(0,229,255,0.08);
       border-bottom: none;
-      border-radius: 6px 6px 0 0;
+      border-radius: 10px 10px 0 0;
       cursor: pointer;
       font-size: 22px;
-      margin-left: auto;
+      margin-left: -1px;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .tab-add:hover {
-      background-color: rgba(0, 0, 0, 0.5);
-      color: white;
+      color: var(--cyan);
+      background: rgba(0, 229, 255, 0.08);
+      text-shadow: 0 0 12px var(--cyan-glow);
     }
 
+    /* ── Add form ── */
     .add-form {
       display: none;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       margin-left: -1px;
-      padding: 4px 8px;
-      border: 1px solid #555;
+      padding: 8px 12px;
+      border: 1px solid rgba(0,229,255,0.2);
       border-bottom: none;
-      border-radius: 6px 6px 0 0;
-      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 10px 10px 0 0;
+      background: rgba(0, 229, 255, 0.06);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
 
     .add-form.visible {
       display: flex;
+      animation: formReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes formReveal {
+      0% { opacity: 0; transform: scaleX(0.8); }
+      100% { opacity: 1; transform: scaleX(1); }
     }
 
     .add-form input {
-      height: 26px;
-      width: 100px;
+      height: 32px;
+      width: 120px;
       font-size: 13px;
-      padding: 0 6px;
-      border-radius: 3px;
-      border: 1px solid #777;
+      font-family: 'Orbitron', monospace;
+      padding: 0 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(0,229,255,0.3);
+      background: rgba(0,10,30,0.6);
+      color: var(--cyan);
       text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .add-form input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 15px rgba(0,229,255,0.2), inset 0 0 10px rgba(0,229,255,0.05);
+    }
+
+    .add-form input::placeholder {
+      color: var(--text-dim);
+      letter-spacing: 1px;
+    }
+
+    .holo-btn {
+      height: 32px;
+      padding: 0 14px;
+      font-size: 12px;
+      font-family: 'Orbitron', monospace;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border-radius: 6px;
+      border: 1px solid rgba(0,229,255,0.3);
+      background: rgba(0,229,255,0.08);
+      color: var(--cyan);
+      transition: all 0.3s;
       text-transform: uppercase;
     }
 
-    .add-form button {
-      height: 28px;
-      padding: 0 8px;
-      font-size: 13px;
-      cursor: pointer;
-      border-radius: 3px;
-      border: 1px solid #777;
-      background-color: rgba(255, 255, 255, 0.15);
-      color: white;
+    .holo-btn:hover {
+      background: rgba(0,229,255,0.18);
+      box-shadow: 0 0 15px rgba(0,229,255,0.2);
+      transform: translateY(-1px);
     }
 
-    .add-form button:hover {
-      background-color: rgba(255, 255, 255, 0.25);
+    .holo-btn.cancel {
+      border-color: rgba(255,255,255,0.15);
+      color: var(--text-dim);
+      background: rgba(255,255,255,0.04);
     }
 
+    .holo-btn.cancel:hover {
+      color: var(--text-secondary);
+      background: rgba(255,255,255,0.08);
+      box-shadow: none;
+    }
+
+    /* ── No droids message ── */
     .no-droids {
-      padding: 2em;
-      color: #ccc;
-      font-size: 1.1em;
+      padding: 4em 2em;
+      color: var(--text-dim);
+      font-size: 1.2em;
+      font-family: 'Orbitron', monospace;
+      letter-spacing: 3px;
     }
 
-.table-container {
-  overflow: hidden;
-  width: 75%;
-  margin: 0 auto;
-  border-radius: 0 0 10px 10px;
-  border: 1px solid #555;
-  border-top: none;
-  background-color: rgba(0, 0, 0, 0.55);
-}
+    .no-droids b {
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan-glow);
+    }
 
-@keyframes blink {
-  0% { background-color: rgba(255, 255, 255, 0.25); }
-  50% { background-color: transparent; }
-  100% { background-color: rgba(255, 255, 255, 0.25); }
-}
+    /* ── Table container (glass panel) ── */
+    .table-container {
+      overflow: hidden;
+      width: 80%;
+      margin: 0 auto;
+      border-radius: 0 0 16px 16px;
+      border: 1px solid var(--panel-border);
+      border-top: none;
+      background: var(--panel-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow:
+        0 8px 40px rgba(0,0,0,0.5),
+        inset 0 0 60px rgba(0,229,255,0.02);
+      animation: fadeSlideUp 0.8s 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+      position: relative;
+    }
 
-.blink-row {
-  animation: blink 1s ease-in-out 3;
-}
+    .table-container::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 5%;
+      width: 90%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan-dim), transparent);
+      opacity: 0.3;
+    }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: center;
-  color: white;
-  table-layout: fixed;
-  font-size: 1.1em;
-}
+    /* ── "Just now" persistent holographic glow + sweep ── */
+    @keyframes justNowSweep {
+      0% { left: -100%; opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { left: 100%; opacity: 0; }
+    }
 
-th, td {
-  border-bottom: 1px solid #555;
-  padding: 14px 16px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+    .just-now-row {
+      background: linear-gradient(90deg,
+        rgba(0,229,255,0.0) 0%,
+        rgba(0,229,255,0.08) 15%,
+        rgba(0,229,255,0.12) 50%,
+        rgba(0,229,255,0.08) 85%,
+        rgba(0,229,255,0.0) 100%);
+      box-shadow: inset 0 0 25px rgba(0,229,255,0.04);
+      position: relative;
+      overflow: hidden;
+    }
 
-th:nth-child(1), td:nth-child(1) { width: 30%; }
-th:nth-child(2), td:nth-child(2) { width: 45%; }
-th:nth-child(3), td:nth-child(3) { width: 25%; }
+    .just-now-sweep {
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(0,229,255,0.1) 30%,
+        rgba(0,229,255,0.22) 50%,
+        rgba(0,229,255,0.1) 70%,
+        transparent 100%);
+      animation: justNowSweep 6s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
 
-th {
-  background-color: rgba(0, 0, 0, 0.3);
-  font-size: 0.85em;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #ddd;
-  font-weight: bold;
-}
+    .just-now-row td {
+      color: #fff;
+      text-shadow: 0 0 6px rgba(0,229,255,0.3);
+    }
 
-th.sortable {
-  cursor: pointer;
-  user-select: none;
-}
+    .just-now-row td:last-child {
+      color: var(--cyan);
+      font-weight: 600;
+    }
 
-th.sortable:hover {
-  color: #fff;
-  background-color: rgba(255, 255, 255, 0.1);
-}
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      color: var(--text-primary);
+      table-layout: fixed;
+      font-size: 1.05em;
+    }
 
-tr:last-child td {
-  border-bottom: none;
-}
+    th, td {
+      border-bottom: 1px solid rgba(0,229,255,0.08);
+      padding: 16px 18px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
+    th:nth-child(1), td:nth-child(1) { width: 30%; }
+    th:nth-child(2), td:nth-child(2) { width: 45%; }
+    th:nth-child(3), td:nth-child(3) { width: 25%; }
+
+    th {
+      background: rgba(0,229,255,0.04);
+      font-family: 'Orbitron', monospace;
+      font-size: 0.7em;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--cyan-dim);
+      font-weight: 600;
+      position: relative;
+    }
+
+    th::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan-dim), transparent);
+      opacity: 0.3;
+    }
+
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.3s;
+    }
+
+    th.sortable:hover {
+      color: var(--cyan);
+      background: rgba(0, 229, 255, 0.08);
+      text-shadow: 0 0 8px var(--cyan-glow);
+    }
+
+    tr {
+      transition: background 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    tbody tr:hover {
+      background: rgba(0, 229, 255, 0.04);
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    td a {
+      color: var(--cyan) !important;
+      text-decoration: none !important;
+      position: relative;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    td a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--cyan);
+      transition: width 0.3s;
+      box-shadow: 0 0 6px var(--cyan-glow);
+    }
+
+    td a:hover {
+      text-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    td a:hover::after { width: 100%; }
+
+    /* ── Row entrance animation ── */
+    @keyframes rowAppear {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ── Modal ── */
     .modal-overlay {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.75);
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 5, 15, 0.85);
       z-index: 1000;
       justify-content: center;
       align-items: flex-start;
       overflow-y: auto;
       padding: 2em 0;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
     }
 
     .modal-overlay.active {
       display: flex;
+      animation: modalFadeIn 0.4s ease;
+    }
+
+    @keyframes modalFadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
     }
 
     .modal-card {
-      background-color: rgba(0, 0, 0, 0.85);
-      color: white;
-      border: 1px solid #555;
-      border-radius: 10px;
-      padding: 2em;
+      background: linear-gradient(135deg, rgba(5,15,40,0.9) 0%, rgba(0,10,25,0.95) 100%);
+      color: var(--text-primary);
+      border: 1px solid rgba(0,229,255,0.2);
+      border-radius: 16px;
+      padding: 2.5em;
       width: 90%;
-      max-width: 900px;
+      max-width: 950px;
       margin: auto;
       overflow-y: auto;
       text-align: left;
       position: relative;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow:
+        0 0 40px rgba(0,229,255,0.08),
+        0 20px 60px rgba(0,0,0,0.6),
+        inset 0 0 80px rgba(0,229,255,0.02);
+      animation: modalCardIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalCardIn {
+      0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 10%;
+      width: 80%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    }
+
+    .modal-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 10%;
+      width: 80%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,229,255,0.3), transparent);
     }
 
     .modal-card h2 {
       margin-top: 0;
       text-align: center;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 1.4em;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--cyan);
+      text-shadow: 0 0 20px var(--cyan-glow);
       word-break: break-word;
     }
 
     .modal-close {
       position: absolute;
-      top: 10px;
-      right: 16px;
+      top: 14px;
+      right: 18px;
       font-size: 1.5em;
-      color: #ccc;
+      color: var(--text-dim);
       cursor: pointer;
       background: none;
       border: none;
       line-height: 1;
+      transition: all 0.3s;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
     }
 
     .modal-close:hover {
-      color: white;
+      color: var(--danger);
+      background: rgba(255,23,68,0.1);
+      transform: rotate(90deg);
     }
 
     .modal-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 1em;
+      gap: 1.2em;
       text-align: center;
+      margin-top: 1em;
+    }
+
+    .modal-grid > div {
+      background: rgba(0,229,255,0.03);
+      border: 1px solid rgba(0,229,255,0.08);
+      border-radius: 10px;
+      padding: 1em 0.8em;
+      transition: all 0.3s;
+    }
+
+    .modal-grid > div:hover {
+      border-color: rgba(0,229,255,0.2);
+      background: rgba(0,229,255,0.06);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0,229,255,0.08);
     }
 
     .modal-field-label {
-      font-size: 0.8em;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.6em;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #aaa;
-      margin-bottom: 0.3em;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      margin-bottom: 0.5em;
     }
 
     .modal-field-value {
       font-size: 1.1em;
+      font-weight: 600;
+      color: var(--text-primary);
     }
 
+    /* ── Attention badges ── */
     .attention-badge {
       display: inline-block;
-      padding: 3px 10px;
-      border-radius: 12px;
+      padding: 4px 14px;
+      border-radius: 20px;
       font-size: 0.85em;
-      font-weight: bold;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      letter-spacing: 1px;
     }
 
     .attention-yes {
-      background-color: #d32f2f;
-      color: #fff;
+      background: rgba(255,23,68,0.15);
+      border: 1px solid rgba(255,23,68,0.4);
+      color: var(--danger);
+      text-shadow: 0 0 8px var(--danger-glow);
+      animation: dangerPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes dangerPulse {
+      0%, 100% { box-shadow: 0 0 8px rgba(255,23,68,0.2); }
+      50% { box-shadow: 0 0 20px rgba(255,23,68,0.4); }
     }
 
     .attention-no {
-      background-color: #388e3c;
-      color: #fff;
+      background: rgba(0,230,118,0.12);
+      border: 1px solid rgba(0,230,118,0.3);
+      color: var(--success);
+      text-shadow: 0 0 8px var(--success-glow);
     }
 
+    /* ── Delete button ── */
     .delete-btn {
-      padding: 8px 20px;
-      font-size: 14px;
+      padding: 10px 28px;
+      font-size: 12px;
+      font-family: 'Orbitron', monospace;
+      letter-spacing: 2px;
+      text-transform: uppercase;
       cursor: pointer;
-      border-radius: 4px;
-      border: 1px solid #d32f2f;
-      background-color: rgba(0, 0, 0, 0.3);
-      color: #d32f2f;
+      border-radius: 8px;
+      border: 1px solid rgba(255,23,68,0.4);
+      background: rgba(255,23,68,0.08);
+      color: var(--danger);
+      transition: all 0.4s;
     }
 
     .delete-btn:hover {
-      background-color: #d32f2f;
-      color: #fff;
+      background: rgba(255,23,68,0.2);
+      box-shadow: 0 0 25px rgba(255,23,68,0.3), inset 0 0 15px rgba(255,23,68,0.05);
+      transform: translateY(-2px);
+      text-shadow: 0 0 8px var(--danger-glow);
     }
 
-    @media screen and (max-width: 600px) {
-      .tab-bar, .table-container {
-        width: 100%;
-      }
-      table {
-        font-size: 0.95em;
-      }
-      td, th {
-        padding: 10px 8px;
-      }
-    }
-
-    @media screen and (max-width: 480px) {
-      .modal-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
+    /* ── History section ── */
     .history-section {
-      margin-top: 1.5em;
-      border-top: 1px solid #555;
-      padding-top: 1em;
+      margin-top: 2em;
+      border-top: 1px solid rgba(0,229,255,0.1);
+      padding-top: 1.5em;
     }
 
     .history-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.8em;
+      margin-bottom: 1em;
     }
 
     .history-header h3 {
       margin: 0;
-      font-size: 1em;
-      color: #ccc;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8em;
+      color: var(--cyan-dim);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 3px;
     }
 
     .history-select {
-      background-color: rgba(255,255,255,0.1);
-      color: white;
-      border: 1px solid #666;
-      border-radius: 4px;
-      padding: 4px 8px;
-      font-size: 13px;
+      background: rgba(0,229,255,0.06);
+      color: var(--cyan);
+      border: 1px solid rgba(0,229,255,0.25);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-family: 'Orbitron', monospace;
       cursor: pointer;
+      transition: all 0.3s;
+      outline: none;
+    }
+
+    .history-select:hover, .history-select:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0,229,255,0.15);
     }
 
     .history-select option {
-      background-color: #222;
-      color: white;
+      background: #0a1628;
+      color: var(--text-primary);
     }
 
     .chart-container {
-      background-color: rgba(0,0,0,0.3);
-      border-radius: 6px;
-      padding: 0.8em;
-      margin-bottom: 0.8em;
+      background: rgba(0,229,255,0.02);
+      border: 1px solid rgba(0,229,255,0.08);
+      border-radius: 10px;
+      padding: 1em;
+      margin-bottom: 1em;
+      transition: all 0.3s;
+    }
+
+    .chart-container:hover {
+      border-color: rgba(0,229,255,0.15);
+      box-shadow: 0 0 20px rgba(0,229,255,0.05);
     }
 
     .chart-container canvas {
@@ -407,24 +959,87 @@ tr:last-child td {
     }
 
     .chart-label {
-      font-size: 0.8em;
-      color: #aaa;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.65em;
+      color: var(--text-dim);
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 0.4em;
+      letter-spacing: 2px;
+      margin-bottom: 0.5em;
     }
 
     .history-loading {
       text-align: center;
-      color: #888;
-      padding: 1em;
+      color: var(--text-dim);
+      padding: 1.5em;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8em;
+      letter-spacing: 2px;
+    }
+
+    /* ── Corner decorations for panels ── */
+    .corner-decor {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-color: var(--cyan-dim);
+      opacity: 0.4;
+    }
+    .corner-tl { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; }
+    .corner-tr { top: -1px; right: -1px; border-top: 2px solid; border-right: 2px solid; }
+    .corner-bl { bottom: -1px; left: -1px; border-bottom: 2px solid; border-left: 2px solid; }
+    .corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; }
+
+    /* ── Responsive ── */
+    @media screen and (max-width: 768px) {
+      .tab-bar, .table-container { width: 96%; }
+      .header h1 { font-size: 1.1em; letter-spacing: 3px; }
+      .tab { padding: 10px 30px; font-size: 11px; }
+    }
+
+    @media screen and (max-width: 600px) {
+      .tab-bar, .table-container { width: 100%; }
+      table { font-size: 0.9em; }
+      td, th { padding: 12px 10px; }
+      .modal-card { padding: 1.5em; }
+    }
+
+    @media screen and (max-width: 480px) {
+      .modal-grid { grid-template-columns: repeat(2, 1fr); }
+      .header h1 { font-size: 0.9em; }
+    }
+
+    /* ── Loading shimmer effect ── */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .loading-shimmer {
+      background: linear-gradient(90deg, rgba(0,229,255,0.03) 25%, rgba(0,229,255,0.08) 50%, rgba(0,229,255,0.03) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 2s ease-in-out infinite;
+    }
+
+    /* ── Ambient particles ── */
+    .ambient-particle {
+      position: fixed;
+      width: 2px;
+      height: 2px;
+      background: var(--cyan);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 3;
+      opacity: 0;
     }
   </style>
+
   <script>
     var droids = [];
     var activeDroid = null;
     var sortColumn = 'device';
     var sortAsc = true;
+    var previousEntries = {};
+    var isFirstLoad = true;
 
     function saveDroids() {
       localStorage.setItem("droids", JSON.stringify(droids));
@@ -459,17 +1074,20 @@ tr:last-child td {
         var id = droids[i];
         var cls = (id === activeDroid) ? 'tab active' : 'tab';
         html += '<div class="' + cls + '" onclick="switchTab(\'' + escapeAttr(id) + '\')">';
+        html += '<span class="tab-icon">&#9670;</span> ';
         html += escapeHtml(id);
         html += ' <span class="tab-close" onclick="event.stopPropagation();removeTab(\'' + escapeAttr(id) + '\')">&times;</span>';
         html += '</div>';
       }
 
-      html += '<button class="tab-add" onclick="showAddForm();">+</button>';
+      html += '<button class="tab-add" onclick="showAddForm();" title="Add Droid">+</button>';
       html += '<div id="add-form" class="add-form">';
-      html += '<input type="text" id="new-droid-input" placeholder="Droid ID" onkeydown="addDroidOnEnter(event);" />';
-      html += '<button onclick="addDroid();">Add</button>';
-      html += '<button onclick="hideAddForm();">Cancel</button>';
+      html += '<input type="text" id="new-droid-input" placeholder="DROID ID" onkeydown="addDroidOnEnter(event);" />';
+      html += '<button class="holo-btn" onclick="addDroid();">Add</button>';
+      html += '<button class="holo-btn cancel" onclick="hideAddForm();">Cancel</button>';
       html += '</div>';
+
+      html += '<div class="tab-settings" id="settings-btn" onclick="toggleSettings(event);" title="Settings">&#9881;</div>';
 
       bar.innerHTML = html;
       renderContent();
@@ -477,6 +1095,8 @@ tr:last-child td {
 
     function switchTab(id) {
       activeDroid = id;
+      previousEntries = {};
+      isFirstLoad = true;
       saveDroids();
       renderTabs();
       loadDoc();
@@ -493,6 +1113,31 @@ tr:last-child td {
       document.getElementById("add-form").classList.remove("visible");
     }
 
+    function toggleSettings(e) {
+      e.stopPropagation();
+      var btn = document.getElementById("settings-btn");
+      var panel = document.getElementById("settings-panel");
+      var isOpen = panel.classList.contains("open");
+      if (isOpen) {
+        panel.classList.remove("open");
+        btn.classList.remove("open");
+        return;
+      }
+      var rect = btn.getBoundingClientRect();
+      panel.style.top = rect.bottom + 'px';
+      panel.style.right = (window.innerWidth - rect.right) + 'px';
+      panel.classList.add("open");
+      btn.classList.add("open");
+      var closer = function(ev) {
+        if (!btn.contains(ev.target) && !panel.contains(ev.target)) {
+          panel.classList.remove("open");
+          btn.classList.remove("open");
+          document.removeEventListener("click", closer);
+        }
+      };
+      setTimeout(function() { document.addEventListener("click", closer); }, 0);
+    }
+
     function addDroid() {
       var input = document.getElementById("new-droid-input");
       var id = input.value.trim().toUpperCase();
@@ -503,6 +1148,8 @@ tr:last-child td {
         droids.push(id);
         activeDroid = id;
       }
+      previousEntries = {};
+      isFirstLoad = true;
       saveDroids();
       hideAddForm();
       renderTabs();
@@ -524,6 +1171,8 @@ tr:last-child td {
         } else {
           activeDroid = null;
         }
+        previousEntries = {};
+        isFirstLoad = true;
       }
       saveDroids();
       renderTabs();
@@ -579,6 +1228,8 @@ tr:last-child td {
         sortColumn = column;
         sortAsc = (column === 'time') ? false : true;
       }
+      previousEntries = {};
+      isFirstLoad = true;
       loadDoc();
     }
 
@@ -588,6 +1239,44 @@ tr:last-child td {
         return sortAsc ? ' \u25BC' : ' \u25B2';
       }
       return sortAsc ? ' \u25B2' : ' \u25BC';
+    }
+
+    function buildRowKey(entry) {
+      return entry.name + '|' + entry.reading + '|' + entry.readingTime;
+    }
+
+    function addSweep(row) {
+      if (row.querySelector('.just-now-sweep')) return;
+      var sweep = document.createElement('div');
+      sweep.className = 'just-now-sweep';
+      sweep.style.animationDelay = (Math.random() * 5).toFixed(2) + 's';
+      row.appendChild(sweep);
+    }
+
+    function removeSweep(row) {
+      var sweep = row.querySelector('.just-now-sweep');
+      if (sweep) row.removeChild(sweep);
+    }
+
+    function playEntrance(row, delay) {
+      row.animate([
+        { opacity: 0, transform: 'translateX(-20px)' },
+        { opacity: 1, transform: 'translateX(0)' }
+      ], {
+        duration: 500,
+        delay: delay,
+        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        fill: 'backwards'
+      });
+    }
+
+    function animateEntrance(container) {
+      var rows = container.querySelectorAll('tr[data-entrance]');
+      for (var i = 0; i < rows.length; i++) {
+        var delay = parseInt(rows[i].getAttribute('data-entrance'), 10) * 60;
+        playEntrance(rows[i], delay);
+        rows[i].removeAttribute('data-entrance');
+      }
     }
 
     function loadDoc() {
@@ -618,24 +1307,128 @@ tr:last-child td {
               return sortAsc ? cmp : -cmp;
             });
 
-            var tableHtml = '<table><tr>';
-            tableHtml += '<th class="sortable" onclick="toggleSort(\'device\')">Device' + sortArrow('device') + '</th>';
-            tableHtml += '<th class="sortable" onclick="toggleSort(\'reading\')">Reading' + sortArrow('reading') + '</th>';
-            tableHtml += '<th class="sortable" onclick="toggleSort(\'time\')">Time' + sortArrow('time') + '</th>';
-            tableHtml += '</tr>';
-
+            var newEntryMap = {};
             for (var i = 0; i < entries.length; i++) {
-              var e = entries[i];
-              var readingTime = timeSince(new Date(e.readingTime));
-              var blinkClass = (readingTime === "just now") ? ' class="blink-row"' : '';
-
-              tableHtml += '<tr' + blinkClass + '><td><a href="#" style="color:white;text-decoration:underline;cursor:pointer;" onmouseover="this.style.opacity=\'0.7\'" onmouseout="this.style.opacity=\'1\'" onclick="openDeviceModal(\'' + encodeURIComponent(e.name) + '\');return false;">' + escapeHtml(e.name) + '</a></td>' +
-                '<td>' + escapeHtml(e.reading) + '</td>' +
-                '<td>' + escapeHtml(readingTime) + '</td></tr>';
+              newEntryMap[entries[i].name] = buildRowKey(entries[i]);
             }
 
-            tableHtml += '</table>';
-            document.getElementById("resp").innerHTML = tableHtml;
+            var resp = document.getElementById("resp");
+            var existingTable = resp.querySelector('table');
+
+            if (!existingTable || isFirstLoad) {
+              var tableHtml = '<table><thead><tr>';
+              tableHtml += '<th class="sortable" onclick="toggleSort(\'device\')">Device' + sortArrow('device') + '</th>';
+              tableHtml += '<th class="sortable" onclick="toggleSort(\'reading\')">Reading' + sortArrow('reading') + '</th>';
+              tableHtml += '<th class="sortable" onclick="toggleSort(\'time\')">Time' + sortArrow('time') + '</th>';
+              tableHtml += '</tr></thead><tbody>';
+
+              for (var i = 0; i < entries.length; i++) {
+                var e = entries[i];
+                var readingTime = timeSince(new Date(e.readingTime));
+                var isJustNow = (readingTime === "just now");
+                var rowClasses = '';
+                if (isJustNow) rowClasses = 'just-now-row';
+
+                tableHtml += '<tr class="' + rowClasses + '" data-device="' + escapeHtml(e.name) + '" data-entrance="' + i + '">' +
+                  '<td><a href="#" onclick="openDeviceModal(\'' + encodeURIComponent(e.name) + '\');return false;">' + escapeHtml(e.name) + '</a></td>' +
+                  '<td>' + escapeHtml(e.reading) + '</td>' +
+                  '<td>' + escapeHtml(readingTime) + '</td></tr>';
+              }
+
+              tableHtml += '</tbody></table>';
+              resp.innerHTML = tableHtml;
+              animateEntrance(resp);
+              var justNowRows = resp.querySelectorAll('.just-now-row');
+              for (var j = 0; j < justNowRows.length; j++) addSweep(justNowRows[j]);
+              isFirstLoad = false;
+            } else {
+              var thead = existingTable.querySelector('thead tr');
+              if (thead) {
+                thead.innerHTML =
+                  '<th class="sortable" onclick="toggleSort(\'device\')">Device' + sortArrow('device') + '</th>' +
+                  '<th class="sortable" onclick="toggleSort(\'reading\')">Reading' + sortArrow('reading') + '</th>' +
+                  '<th class="sortable" onclick="toggleSort(\'time\')">Time' + sortArrow('time') + '</th>';
+              }
+
+              var tbody = existingTable.querySelector('tbody');
+              var existingRows = {};
+              var rows = tbody.querySelectorAll('tr');
+              for (var r = 0; r < rows.length; r++) {
+                var devName = rows[r].getAttribute('data-device');
+                if (devName) existingRows[devName] = rows[r];
+              }
+
+              var newNames = [];
+              for (var i = 0; i < entries.length; i++) newNames.push(entries[i].name);
+
+              for (var devName in existingRows) {
+                if (newNames.indexOf(devName) === -1) {
+                  var row = existingRows[devName];
+                  row.style.transition = 'opacity 0.3s, transform 0.3s';
+                  row.style.opacity = '0';
+                  row.style.transform = 'translateX(20px)';
+                  (function(r) {
+                    setTimeout(function() { if (r.parentNode) r.parentNode.removeChild(r); }, 300);
+                  })(row);
+                }
+              }
+
+              for (var i = 0; i < entries.length; i++) {
+                var e = entries[i];
+                var readingTime = timeSince(new Date(e.readingTime));
+                var isJustNow = (readingTime === "just now");
+                var currentKey = buildRowKey(e);
+                var prevKey = previousEntries[e.name];
+                var existingRow = existingRows[e.name];
+
+                if (existingRow) {
+                  var cells = existingRow.querySelectorAll('td');
+                  if (cells.length >= 3) {
+                    cells[1].textContent = e.reading;
+                    cells[2].textContent = readingTime;
+                  }
+
+                  if (isJustNow) {
+                    existingRow.classList.add('just-now-row');
+                    addSweep(existingRow);
+                  } else {
+                    existingRow.classList.remove('just-now-row');
+                    removeSweep(existingRow);
+                  }
+
+                  var parent = existingRow.parentNode;
+                  var allRows = parent.querySelectorAll('tr');
+                  if (allRows[i] !== existingRow) {
+                    if (i < allRows.length) {
+                      parent.insertBefore(existingRow, allRows[i]);
+                    } else {
+                      parent.appendChild(existingRow);
+                    }
+                  }
+                } else {
+                  var newRow = document.createElement('tr');
+                  if (isJustNow) {
+                    newRow.className = 'just-now-row';
+                    addSweep(newRow);
+                  }
+                  newRow.setAttribute('data-device', e.name);
+                  newRow.innerHTML =
+                    '<td><a href="#" onclick="openDeviceModal(\'' + encodeURIComponent(e.name) + '\');return false;">' + escapeHtml(e.name) + '</a></td>' +
+                    '<td>' + escapeHtml(e.reading) + '</td>' +
+                    '<td>' + escapeHtml(readingTime) + '</td>';
+
+                  var allRows = tbody.querySelectorAll('tr');
+                  if (i < allRows.length) {
+                    tbody.insertBefore(newRow, allRows[i]);
+                  } else {
+                    tbody.appendChild(newRow);
+                  }
+                  playEntrance(newRow, 0);
+                }
+              }
+            }
+
+            previousEntries = newEntryMap;
           } catch (err) {
             document.getElementById("resp").innerHTML = '';
           }
@@ -662,7 +1455,7 @@ tr:last-child td {
       if (!droidId) return;
 
       var content = document.getElementById("modal-content");
-      content.innerHTML = '<h2>Loading...</h2>';
+      content.innerHTML = '<h2 class="loading-shimmer" style="padding:1em;border-radius:8px;">Accessing Databank...</h2>';
       document.getElementById("device-modal").classList.add("active");
 
       var xhr = new XMLHttpRequest();
@@ -713,10 +1506,10 @@ tr:last-child td {
       html += '<option value="48">48 Hours</option>';
       html += '</select>';
       html += '</div>';
-      html += '<div id="history-charts"><div class="history-loading">Loading history...</div></div>';
+      html += '<div id="history-charts"><div class="history-loading">Retrieving transmissions...</div></div>';
       html += '</div>';
 
-      html += '<div style="text-align:center;margin-top:1.5em;"><button class="delete-btn" onclick="deleteDevice(\'' + escapeAttr(droidId) + '\', \'' + escapeAttr(deviceName) + '\')">Delete Device</button></div>';
+      html += '<div style="text-align:center;margin-top:2em;"><button class="delete-btn" onclick="deleteDevice(\'' + escapeAttr(droidId) + '\', \'' + escapeAttr(deviceName) + '\')">Decommission Device</button></div>';
 
       document.getElementById("modal-content").innerHTML = html;
       loadHistory(droidId, deviceName);
@@ -725,7 +1518,7 @@ tr:last-child td {
     function loadHistory(droidId, deviceName) {
       var hours = document.getElementById("history-hours").value;
       var container = document.getElementById("history-charts");
-      container.innerHTML = '<div class="history-loading">Loading history...</div>';
+      container.innerHTML = '<div class="history-loading">Retrieving transmissions...</div>';
       destroyCharts();
 
       var xhr = new XMLHttpRequest();
@@ -737,10 +1530,10 @@ tr:last-child td {
               var historyData = JSON.parse(xhr.responseText);
               renderHistoryCharts(container, historyData);
             } catch (err) {
-              container.innerHTML = '<div class="history-loading">Failed to load history</div>';
+              container.innerHTML = '<div class="history-loading">Failed to decode transmission</div>';
             }
           } else {
-            container.innerHTML = '<div class="history-loading">No history available</div>';
+            container.innerHTML = '<div class="history-loading">No transmissions recorded</div>';
           }
         }
       };
@@ -807,16 +1600,16 @@ tr:last-child td {
 
     function renderHistoryCharts(container, history) {
       if (!history || history.length === 0) {
-        container.innerHTML = '<div class="history-loading">No history data available</div>';
+        container.innerHTML = '<div class="history-loading">No transmissions recorded</div>';
         return;
       }
       var series = analyzeHistorySeries(history);
       if (series.length === 0) {
-        container.innerHTML = '<div class="history-loading">No history data available</div>';
+        container.innerHTML = '<div class="history-loading">No transmissions recorded</div>';
         return;
       }
       container.innerHTML = '';
-      var chartColors = ['#4fc3f7', '#81c784', '#ffb74d', '#e57373', '#ba68c8', '#4dd0e1'];
+      var chartColors = ['#00e5ff', '#00e676', '#ffab00', '#ff1744', '#d500f9', '#00b8d4'];
       for (var i = 0; i < series.length; i++) {
         try {
           var s = series[i];
@@ -844,8 +1637,12 @@ tr:last-child td {
                 borderColor: color,
                 borderWidth: 2,
                 pointRadius: validData.length > 50 ? 0 : 3,
-                pointHoverRadius: 4,
-                fill: false,
+                pointHoverRadius: 5,
+                pointBackgroundColor: color,
+                pointBorderColor: color,
+                pointHoverBackgroundColor: '#fff',
+                fill: true,
+                backgroundColor: hexToRgba(color, 0.08),
                 tension: s.isCategorical ? 0 : 0.3,
                 stepped: s.isCategorical ? 'before' : false
               }]
@@ -856,6 +1653,14 @@ tr:last-child td {
               plugins: {
                 legend: { display: false },
                 tooltip: {
+                  backgroundColor: 'rgba(5,15,35,0.95)',
+                  borderColor: 'rgba(0,229,255,0.3)',
+                  borderWidth: 1,
+                  titleColor: '#00e5ff',
+                  bodyColor: '#e0f7fa',
+                  titleFont: { family: 'Orbitron', size: 11 },
+                  bodyFont: { family: 'Rajdhani', size: 13 },
+                  cornerRadius: 8,
                   callbacks: {
                     label: function(context) {
                       var point = context.raw;
@@ -873,13 +1678,14 @@ tr:last-child td {
                 x: {
                   type: 'time',
                   time: { tooltipFormat: 'MMM d, HH:mm' },
-                  grid: { color: 'rgba(255,255,255,0.1)' },
-                  ticks: { color: '#aaa', maxTicksLimit: 8 }
+                  grid: { color: 'rgba(0,229,255,0.05)', drawBorder: false },
+                  ticks: { color: '#546e7a', maxTicksLimit: 8, font: { family: 'Rajdhani', size: 11 } }
                 },
                 y: {
-                  grid: { color: 'rgba(255,255,255,0.1)' },
+                  grid: { color: 'rgba(0,229,255,0.05)', drawBorder: false },
                   ticks: {
-                    color: '#aaa',
+                    color: '#546e7a',
+                    font: { family: 'Rajdhani', size: 11 },
                     stepSize: s.isCategorical ? 1 : undefined,
                     callback: s.isCategorical
                       ? function(val) { return val === 1 ? 'On' : 'Off'; }
@@ -898,8 +1704,22 @@ tr:last-child td {
         }
       }
       if (container.innerHTML === '') {
-        container.innerHTML = '<div class="history-loading">No history data available</div>';
+        container.innerHTML = '<div class="history-loading">No transmissions recorded</div>';
       }
+    }
+
+    function hexToRgba(hex, alpha) {
+      var r = 0, g = 0, b = 0;
+      if (hex.length === 4) {
+        r = parseInt(hex[1] + hex[1], 16);
+        g = parseInt(hex[2] + hex[2], 16);
+        b = parseInt(hex[3] + hex[3], 16);
+      } else if (hex.length === 7) {
+        r = parseInt(hex.substring(1, 3), 16);
+        g = parseInt(hex.substring(3, 5), 16);
+        b = parseInt(hex.substring(5, 7), 16);
+      }
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
     }
 
     function closeDeviceModal() {
@@ -907,10 +1727,291 @@ tr:last-child td {
       document.getElementById("device-modal").classList.remove("active");
     }
 
+    /* ═══════════════════════════════════════
+       STAR FIELD (OffscreenCanvas Worker)
+       ═══════════════════════════════════════ */
+
+    var starfieldWorker = null;
+
+    function getWorkerSource() {
+      return '(' + function() {
+        var canvas, ctx, stars = [], nebulaClouds = [];
+        var mouseX = 0, mouseY = 0, W = 0, H = 0;
+
+        function getStarColor() {
+          var c = ['255,255,255','200,220,255','180,200,255','255,230,200','200,255,255'];
+          return c[Math.floor(Math.random() * c.length)];
+        }
+
+        function initStars() {
+          stars = []; nebulaClouds = [];
+          for (var i = 0; i < 300; i++) {
+            stars.push({
+              x: Math.random() * W, y: Math.random() * H,
+              radius: Math.random() * 0.8 + 0.2,
+              opacity: Math.random() * 0.8 + 0.2,
+              twinkleSpeed: Math.random() * 0.02 + 0.005,
+              twinklePhase: Math.random() * Math.PI * 2,
+              drift: (Math.random() - 0.5) * 0.03,
+              color: getStarColor()
+            });
+          }
+          for (var n = 0; n < 4; n++) {
+            nebulaClouds.push({
+              x: Math.random() * W, y: Math.random() * H,
+              radius: Math.random() * 200 + 100,
+              color: n % 2 === 0 ? 'rgba(0,100,180,' : 'rgba(80,0,120,',
+              baseOpacity: Math.random() * 0.02 + 0.01,
+              pulse: Math.random() * 0.005 + 0.002,
+              phase: Math.random() * Math.PI * 2
+            });
+          }
+        }
+
+        function render() {
+          ctx.clearRect(0, 0, W, H);
+          var time = Date.now() * 0.001;
+          var px = (mouseX - W / 2) * 0.005;
+          var py = (mouseY - H / 2) * 0.005;
+
+          for (var n = 0; n < nebulaClouds.length; n++) {
+            var nc = nebulaClouds[n];
+            var nOp = nc.baseOpacity + Math.sin(time * nc.pulse + nc.phase) * nc.baseOpacity * 0.5;
+            var grad = ctx.createRadialGradient(
+              nc.x + px * 0.3, nc.y + py * 0.3, 0,
+              nc.x + px * 0.3, nc.y + py * 0.3, nc.radius);
+            grad.addColorStop(0, nc.color + nOp + ')');
+            grad.addColorStop(1, nc.color + '0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+          }
+
+          for (var i = 0; i < stars.length; i++) {
+            var s = stars[i];
+            var tw = Math.sin(time * s.twinkleSpeed * 60 + s.twinklePhase);
+            var op = s.opacity * (0.6 + tw * 0.4);
+            s.x += s.drift + px * (s.radius * 0.3);
+            s.y += py * (s.radius * 0.3);
+            if (s.x < -10) s.x = W + 10;
+            if (s.x > W + 10) s.x = -10;
+            if (s.y < -10) s.y = H + 10;
+            if (s.y > H + 10) s.y = -10;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(' + s.color + ',' + op + ')';
+            ctx.fill();
+            if (s.radius > 1.2 && op > 0.7) {
+              ctx.beginPath();
+              ctx.arc(s.x, s.y, s.radius * 3, 0, Math.PI * 2);
+              ctx.fillStyle = 'rgba(' + s.color + ',' + (op * 0.08) + ')';
+              ctx.fill();
+            }
+          }
+          requestAnimationFrame(render);
+        }
+
+        self.onmessage = function(e) {
+          var d = e.data;
+          if (d.type === 'init') {
+            canvas = d.canvas;
+            ctx = canvas.getContext('2d');
+            W = d.width; H = d.height;
+            initStars();
+            render();
+          } else if (d.type === 'resize') {
+            W = d.width; H = d.height;
+            canvas.width = W; canvas.height = H;
+          } else if (d.type === 'mouse') {
+            mouseX = d.x; mouseY = d.y;
+          }
+        };
+      }.toString() + ')()';
+    }
+
+    function initStarfield() {
+      var canvas = document.getElementById('starfield');
+      var useWorker = typeof canvas.transferControlToOffscreen === 'function';
+
+      if (useWorker) {
+        try {
+          var offscreen = canvas.transferControlToOffscreen();
+          var blob = new Blob([getWorkerSource()], { type: 'application/javascript' });
+          var url = URL.createObjectURL(blob);
+          starfieldWorker = new Worker(url);
+          URL.revokeObjectURL(url);
+
+          starfieldWorker.postMessage({
+            type: 'init', canvas: offscreen,
+            width: window.innerWidth, height: window.innerHeight
+          }, [offscreen]);
+
+          window.addEventListener('resize', function() {
+            starfieldWorker.postMessage({
+              type: 'resize',
+              width: window.innerWidth, height: window.innerHeight
+            });
+          });
+
+          document.addEventListener('mousemove', function(e) {
+            starfieldWorker.postMessage({ type: 'mouse', x: e.clientX, y: e.clientY });
+          });
+
+          return;
+        } catch (err) {
+          /* fall through to main-thread fallback */
+        }
+      }
+
+      initStarfieldFallback(canvas);
+    }
+
+    function initStarfieldFallback(canvas) {
+      var ctx = canvas.getContext('2d');
+      var stars = [], nebulaClouds = [];
+      var mouseX = 0, mouseY = 0;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      var colors = ['255,255,255','200,220,255','180,200,255','255,230,200','200,255,255'];
+      for (var i = 0; i < 300; i++) {
+        stars.push({
+          x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+          radius: Math.random() * 0.8 + 0.2,
+          opacity: Math.random() * 0.8 + 0.2,
+          twinkleSpeed: Math.random() * 0.02 + 0.005,
+          twinklePhase: Math.random() * Math.PI * 2,
+          drift: (Math.random() - 0.5) * 0.03,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+      for (var n = 0; n < 4; n++) {
+        nebulaClouds.push({
+          x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+          radius: Math.random() * 200 + 100,
+          color: n % 2 === 0 ? 'rgba(0,100,180,' : 'rgba(80,0,120,',
+          baseOpacity: Math.random() * 0.02 + 0.01,
+          pulse: Math.random() * 0.005 + 0.002,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+
+      window.addEventListener('resize', function() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+      document.addEventListener('mousemove', function(e) {
+        mouseX = e.clientX; mouseY = e.clientY;
+      });
+
+      (function render() {
+        var W = canvas.width, H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+        var time = Date.now() * 0.001;
+        var px = (mouseX - W / 2) * 0.005;
+        var py = (mouseY - H / 2) * 0.005;
+        for (var n = 0; n < nebulaClouds.length; n++) {
+          var nc = nebulaClouds[n];
+          var nOp = nc.baseOpacity + Math.sin(time * nc.pulse + nc.phase) * nc.baseOpacity * 0.5;
+          var grad = ctx.createRadialGradient(
+            nc.x + px * 0.3, nc.y + py * 0.3, 0,
+            nc.x + px * 0.3, nc.y + py * 0.3, nc.radius);
+          grad.addColorStop(0, nc.color + nOp + ')');
+          grad.addColorStop(1, nc.color + '0)');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, W, H);
+        }
+        for (var i = 0; i < stars.length; i++) {
+          var s = stars[i];
+          var tw = Math.sin(time * s.twinkleSpeed * 60 + s.twinklePhase);
+          var op = s.opacity * (0.6 + tw * 0.4);
+          s.x += s.drift + px * (s.radius * 0.3);
+          s.y += py * (s.radius * 0.3);
+          if (s.x < -10) s.x = W + 10;
+          if (s.x > W + 10) s.x = -10;
+          if (s.y < -10) s.y = H + 10;
+          if (s.y > H + 10) s.y = -10;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(' + s.color + ',' + op + ')';
+          ctx.fill();
+          if (s.radius > 1.2 && op > 0.7) {
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.radius * 3, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(' + s.color + ',' + (op * 0.08) + ')';
+            ctx.fill();
+          }
+        }
+        requestAnimationFrame(render);
+      })();
+    }
+
+    /* ═══════════════════════════════════════
+       FLOATING AMBIENT PARTICLES
+       ═══════════════════════════════════════ */
+
+    function initAmbientParticles() {
+      var container = document.body;
+      for (var i = 0; i < 20; i++) {
+        var p = document.createElement('div');
+        p.className = 'ambient-particle';
+        container.appendChild(p);
+        animateAmbientParticle(p);
+      }
+    }
+
+    function animateAmbientParticle(el) {
+      var startX = Math.random() * window.innerWidth;
+      var startY = Math.random() * window.innerHeight;
+      var duration = Math.random() * 15000 + 10000;
+      var size = Math.random() * 3 + 1;
+
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+      el.style.left = startX + 'px';
+      el.style.top = startY + 'px';
+
+      var keyframes = [
+        { opacity: 0, transform: 'translate(0, 0) scale(0.5)' },
+        { opacity: 0.4, transform: 'translate(' + (Math.random() * 200 - 100) + 'px, ' + (-Math.random() * 300 - 50) + 'px) scale(1)' },
+        { opacity: 0, transform: 'translate(' + (Math.random() * 400 - 200) + 'px, ' + (-Math.random() * 600 - 100) + 'px) scale(0.3)' }
+      ];
+
+      var anim = el.animate(keyframes, { duration: duration, easing: 'ease-in-out' });
+      anim.onfinish = function() { animateAmbientParticle(el); };
+    }
+
+    /* ═══════════════════════════════════════
+       TYPING EFFECT FOR HEADER
+       ═══════════════════════════════════════ */
+
+    function typeEffect(element, text, speed) {
+      var i = 0;
+      element.textContent = '';
+      function type() {
+        if (i < text.length) {
+          element.textContent += text.charAt(i);
+          i++;
+          setTimeout(type, speed);
+        }
+      }
+      type();
+    }
+
+    /* ═══════════════════════════════════════
+       INITIALIZATION
+       ═══════════════════════════════════════ */
+
     function init() {
+      initStarfield();
+      initAmbientParticles();
       loadDroids();
       renderTabs();
       loadDoc();
+
+      var subtitle = document.querySelector('.subtitle');
+      if (subtitle) {
+        typeEffect(subtitle, 'COMMAND CENTER', 80);
+      }
     }
 
     setInterval(loadDoc, 5000);
@@ -919,16 +2020,33 @@ tr:last-child td {
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 </head>
 <body onload="init();">
-  <div class="header">
-    <img alt="logo" src="/images/HomeDroid2Small.png" />
-    <h1>My Droid Dashboard</h1>
+  <canvas id="starfield"></canvas>
+  <div class="holo-grid"></div>
+  <div class="scanlines"></div>
+
+  <div class="main-wrapper">
+    <div class="header">
+      <img alt="logo" src="/images/HomeDroid2Small.png" />
+      <h1>My Droid Dashboard<span class="subtitle"></span></h1>
+    </div>
+    <div class="tab-bar" id="tab-bar"></div>
+    <div class="settings-panel" id="settings-panel">
+      <div class="settings-panel-header">Settings</div>
+      <a class="settings-item" href="/index_original.html"><span class="settings-item-icon">&#9788;</span> Classic Theme</a>
+    </div>
+    <div class="table-container">
+      <div class="corner-decor corner-bl"></div>
+      <div class="corner-decor corner-br"></div>
+      <div id="resp"></div>
+    </div>
   </div>
-  <div class="tab-bar" id="tab-bar"></div>
-  <div class="table-container">
-    <div id="resp"></div>
-  </div>
+
   <div id="device-modal" class="modal-overlay" onclick="if(event.target===this)closeDeviceModal();">
     <div class="modal-card">
+      <div class="corner-decor corner-tl"></div>
+      <div class="corner-decor corner-tr"></div>
+      <div class="corner-decor corner-bl"></div>
+      <div class="corner-decor corner-br"></div>
       <button class="modal-close" onclick="closeDeviceModal();">&times;</button>
       <div id="modal-content"></div>
     </div>
