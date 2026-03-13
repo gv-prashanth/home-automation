@@ -876,7 +876,9 @@ tr:last-child td {
                   ticks: {
                     color: '#aaa',
                     stepSize: s.isCategorical ? 1 : undefined,
-                    callback: s.isCategorical ? function(val) { return val === 1 ? 'On' : 'Off'; } : undefined
+                    callback: s.isCategorical
+                      ? function(val) { return val === 1 ? 'On' : 'Off'; }
+                      : function(val) { return parseFloat(val.toPrecision(12)); }
                   },
                   min: s.isCategorical ? 0 : undefined,
                   max: s.isCategorical ? 1 : undefined
