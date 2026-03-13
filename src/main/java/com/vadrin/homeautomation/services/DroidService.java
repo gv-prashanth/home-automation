@@ -9,9 +9,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.Duration;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,8 +24,11 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.vadrin.homeautomation.models.DeviceHistoryEntry;
+import com.vadrin.homeautomation.models.DeviceHistoryInfo;
 import com.vadrin.homeautomation.models.DeviceInfo;
 import com.vadrin.homeautomation.models.Droid;
+import com.vadrin.homeautomation.models.DroidHistory;
 
 
 @Service
@@ -36,11 +42,16 @@ public class DroidService {
   
   private String[] attentionTerms = {"danger", "error", "shutdown", "dry run", "not receiving"};
 
+  private static final long HISTORY_MIN_INTERVAL_SECONDS = 300;
+  private static final long HISTORY_RETENTION_HOURS = 48;
+
   public void upsertDevice(String droidId, String deviceName, String deviceReading) throws InterruptedException, ExecutionException, FileNotFoundException {
     System.out.println("upsert request is - " + droidId + " " + deviceName + " " + deviceReading);
     Droid d = getDroid(droidId);
-    d.getDevices().put(deviceName, new DeviceInfo(deviceReading, Instant.now().toString(), checkForAttention(deviceReading)));
+    String now = Instant.now().toString();
+    d.getDevices().put(deviceName, new DeviceInfo(deviceReading, now, checkForAttention(deviceReading)));
     saveDroid(d);
+    appendDeviceHistory(droidId, deviceName, deviceReading, now);
   }
 
   private boolean checkForAttention(String deviceReading) {
@@ -99,5 +110,74 @@ public class DroidService {
 	thisDroid.getDevices().remove(deviceName);
 	saveDroid(thisDroid);
   }
-  
+
+  private void appendDeviceHistory(String droidId, String deviceName, String deviceReading, String readingTime) {
+    try {
+      DroidHistory history = getDroidHistory(droidId);
+      DeviceHistoryInfo deviceHistory = history.getDevices().get(deviceName);
+      if (deviceHistory == null) {
+        deviceHistory = new DeviceHistoryInfo();
+        history.getDevices().put(deviceName, deviceHistory);
+      }
+
+      List<DeviceHistoryEntry> entries = deviceHistory.getDeviceReadingHistory();
+      if (!entries.isEmpty()) {
+        DeviceHistoryEntry lastEntry = entries.get(entries.size() - 1);
+        boolean sameValue = deviceReading.equals(lastEntry.getDeviceReading());
+        boolean tooSoon = Duration.between(
+            Instant.parse(lastEntry.getReadingTime()), Instant.parse(readingTime)
+        ).getSeconds() < HISTORY_MIN_INTERVAL_SECONDS;
+
+        if (sameValue && tooSoon) {
+          return;
+        }
+      }
+
+      entries.add(new DeviceHistoryEntry(deviceReading, readingTime));
+      pruneOldEntries(history);
+      saveDroidHistory(history);
+    } catch (Exception e) {
+      System.out.println("Failed to append device history: " + e.getMessage());
+    }
+  }
+
+  private void pruneOldEntries(DroidHistory history) {
+    Instant cutoff = Instant.now().minus(Duration.ofHours(HISTORY_RETENTION_HOURS));
+    for (DeviceHistoryInfo deviceHistory : history.getDevices().values()) {
+      Iterator<DeviceHistoryEntry> it = deviceHistory.getDeviceReadingHistory().iterator();
+      while (it.hasNext()) {
+        DeviceHistoryEntry entry = it.next();
+        if (Instant.parse(entry.getReadingTime()).isBefore(cutoff)) {
+          it.remove();
+        }
+      }
+    }
+  }
+
+  public List<DeviceHistoryEntry> getDeviceHistory(String droidId, String deviceName, int hours) throws InterruptedException, ExecutionException {
+    DroidHistory history = getDroidHistory(droidId);
+    DeviceHistoryInfo deviceHistory = history.getDevices().get(deviceName);
+    if (deviceHistory == null) {
+      return new ArrayList<>();
+    }
+    Instant cutoff = Instant.now().minus(Duration.ofHours(hours));
+    return deviceHistory.getDeviceReadingHistory().stream()
+        .filter(e -> Instant.parse(e.getReadingTime()).isAfter(cutoff))
+        .collect(Collectors.toList());
+  }
+
+  private DroidHistory getDroidHistory(String droidId) throws InterruptedException, ExecutionException {
+    ApiFuture<DocumentSnapshot> documentFuture = this.firestore.document("DroidHistoryRepository/" + droidId).get();
+    DroidHistory history = documentFuture.get().toObject(DroidHistory.class);
+    if (history == null) {
+      history = new DroidHistory();
+      history.setDroidId(droidId);
+    }
+    return history;
+  }
+
+  private void saveDroidHistory(DroidHistory history) throws InterruptedException, ExecutionException {
+    this.firestore.document("DroidHistoryRepository/" + history.getDroidId()).set(history).get();
+  }
+
 }

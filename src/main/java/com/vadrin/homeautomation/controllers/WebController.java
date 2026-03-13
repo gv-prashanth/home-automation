@@ -1,7 +1,9 @@
 package com.vadrin.homeautomation.controllers;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vadrin.homeautomation.models.DeviceHistoryEntry;
 import com.vadrin.homeautomation.models.DeviceInfo;
 import com.vadrin.homeautomation.models.Droid;
 import com.vadrin.homeautomation.services.DroidService;
@@ -56,6 +59,16 @@ public class WebController {
   @DeleteMapping("/droid/{droidId}/devices/{deviceName}")
   public void deleteDevice(@PathVariable String droidId,@PathVariable String deviceName) throws FileNotFoundException, InterruptedException, ExecutionException {
     droidService.deleteDevice(droidId.toUpperCase(), deviceName);
+  }
+
+  @GetMapping("/droid/{droidId}/devices/{deviceName}/history")
+  public List<DeviceHistoryEntry> getDeviceHistory(@PathVariable String droidId, @PathVariable String deviceName, @RequestParam(defaultValue = "24") int hours) {
+    try {
+      return droidService.getDeviceHistory(droidId.toUpperCase(), deviceName, hours);
+    } catch (InterruptedException | ExecutionException e) {
+      Thread.currentThread().interrupt();
+      return new ArrayList<>();
+    }
   }
 
 }

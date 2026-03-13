@@ -215,6 +215,8 @@ th {
       padding: 2em;
       width: 90%;
       max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
       text-align: left;
       position: relative;
     }
@@ -304,6 +306,68 @@ th {
       .modal-grid {
         grid-template-columns: repeat(2, 1fr);
       }
+    }
+
+    .history-section {
+      margin-top: 1.5em;
+      border-top: 1px solid #555;
+      padding-top: 1em;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8em;
+    }
+
+    .history-header h3 {
+      margin: 0;
+      font-size: 1em;
+      color: #ccc;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .history-select {
+      background-color: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid #666;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .history-select option {
+      background-color: #222;
+      color: white;
+    }
+
+    .chart-container {
+      background-color: rgba(0,0,0,0.3);
+      border-radius: 6px;
+      padding: 0.8em;
+      margin-bottom: 0.8em;
+    }
+
+    .chart-container canvas {
+      width: 100% !important;
+      max-height: 200px;
+    }
+
+    .chart-label {
+      font-size: 0.8em;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.4em;
+    }
+
+    .history-loading {
+      text-align: center;
+      color: #888;
+      padding: 1em;
     }
   </style>
   <script>
@@ -532,6 +596,8 @@ th {
       xhr.send();
     }
 
+    var activeCharts = [];
+
     function renderModal(droidId, deviceName, data) {
       var attentionClass = data.inNeedOfAttention ? 'attention-yes' : 'attention-no';
       var attentionText = data.inNeedOfAttention ? 'Yes' : 'No';
@@ -544,12 +610,207 @@ th {
       html += '<div><div class="modal-field-label">Last Updated</div><div class="modal-field-value">' + escapeHtml(readingTime) + '</div></div>';
       html += '<div><div class="modal-field-label">Needs Attention</div><div class="modal-field-value"><span class="attention-badge ' + attentionClass + '">' + attentionText + '</span></div></div>';
       html += '</div>';
+
+      html += '<div class="history-section">';
+      html += '<div class="history-header">';
+      html += '<h3>History</h3>';
+      html += '<select class="history-select" id="history-hours" onchange="loadHistory(\'' + escapeAttr(droidId) + '\', \'' + escapeAttr(deviceName) + '\')">';
+      html += '<option value="6">6 Hours</option>';
+      html += '<option value="12">12 Hours</option>';
+      html += '<option value="24" selected>24 Hours</option>';
+      html += '<option value="48">48 Hours</option>';
+      html += '</select>';
+      html += '</div>';
+      html += '<div id="history-charts"><div class="history-loading">Loading history...</div></div>';
+      html += '</div>';
+
       html += '<div style="text-align:center;margin-top:1.5em;"><button class="delete-btn" onclick="deleteDevice(\'' + escapeAttr(droidId) + '\', \'' + escapeAttr(deviceName) + '\')">Delete Device</button></div>';
 
       document.getElementById("modal-content").innerHTML = html;
+      loadHistory(droidId, deviceName);
+    }
+
+    function loadHistory(droidId, deviceName) {
+      var hours = document.getElementById("history-hours").value;
+      var container = document.getElementById("history-charts");
+      container.innerHTML = '<div class="history-loading">Loading history...</div>';
+      destroyCharts();
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/droid/' + encodeURIComponent(droidId) + '/devices/' + encodeURIComponent(deviceName) + '/history?hours=' + hours, true);
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              var historyData = JSON.parse(xhr.responseText);
+              renderHistoryCharts(container, historyData);
+            } catch (err) {
+              container.innerHTML = '<div class="history-loading">Failed to load history</div>';
+            }
+          } else {
+            container.innerHTML = '<div class="history-loading">No history available</div>';
+          }
+        }
+      };
+      xhr.send();
+    }
+
+    function destroyCharts() {
+      for (var i = 0; i < activeCharts.length; i++) {
+        activeCharts[i].destroy();
+      }
+      activeCharts = [];
+    }
+
+    function parseReadingValue(reading) {
+      if (!reading) return [{ value: null, label: 'Unknown', raw: '', isCategorical: true }];
+      var parts = reading.split(',');
+      var results = [];
+      for (var i = 0; i < parts.length; i++) {
+        var part = parts[i].trim();
+        var numMatch = part.match(/([-+]?\d*\.?\d+)/);
+        if (numMatch) {
+          var numVal = parseFloat(numMatch[1]);
+          var label = part.replace(numMatch[0], '').trim();
+          if (!label) label = 'Value';
+          results.push({ value: numVal, label: label, raw: part, isCategorical: false });
+        } else {
+          var lower = part.toLowerCase();
+          var catVal = null;
+          if (lower === 'off' || lower === 'closed') catVal = 0;
+          else if (lower === 'on' || lower === 'open') catVal = 1;
+
+          if (catVal !== null) {
+            results.push({ value: catVal, label: 'State', raw: part, isCategorical: true });
+          } else {
+            results.push({ value: null, label: part, raw: part, isCategorical: true });
+          }
+        }
+      }
+      return results;
+    }
+
+    function analyzeHistorySeries(history) {
+      if (!history || history.length === 0) return [];
+      var firstParsed = parseReadingValue(history[0].deviceReading);
+      var seriesCount = firstParsed.length;
+      var series = [];
+      for (var s = 0; s < seriesCount; s++) {
+        series.push({ label: firstParsed[s].label, data: [], isCategorical: firstParsed[s].isCategorical });
+      }
+      for (var i = 0; i < history.length; i++) {
+        var parsed = parseReadingValue(history[i].deviceReading);
+        var time = history[i].readingTime;
+        for (var s = 0; s < seriesCount; s++) {
+          if (s < parsed.length && parsed[s].value !== null) {
+            series[s].data.push({ x: time, y: parsed[s].value });
+            if (!parsed[s].isCategorical) series[s].isCategorical = false;
+          } else if (s < parsed.length && parsed[s].isCategorical) {
+            series[s].data.push({ x: time, y: null, label: parsed[s].raw });
+          }
+        }
+      }
+      return series;
+    }
+
+    function renderHistoryCharts(container, history) {
+      if (!history || history.length === 0) {
+        container.innerHTML = '<div class="history-loading">No history data available</div>';
+        return;
+      }
+      var series = analyzeHistorySeries(history);
+      if (series.length === 0) {
+        container.innerHTML = '<div class="history-loading">No history data available</div>';
+        return;
+      }
+      container.innerHTML = '';
+      var chartColors = ['#4fc3f7', '#81c784', '#ffb74d', '#e57373', '#ba68c8', '#4dd0e1'];
+      for (var i = 0; i < series.length; i++) {
+        try {
+          var s = series[i];
+          var validData = s.data.filter(function(d) { return d.y !== null; });
+          if (validData.length === 0) continue;
+          var wrapper = document.createElement('div');
+          wrapper.className = 'chart-container';
+          if (series.length > 1) {
+            var labelDiv = document.createElement('div');
+            labelDiv.className = 'chart-label';
+            labelDiv.textContent = s.label;
+            wrapper.appendChild(labelDiv);
+          }
+          var canvas = document.createElement('canvas');
+          wrapper.appendChild(canvas);
+          container.appendChild(wrapper);
+
+          var color = chartColors[i % chartColors.length];
+          var historyRef = history;
+          var chartConfig = {
+            type: 'line',
+            data: {
+              datasets: [{
+                data: validData,
+                borderColor: color,
+                backgroundColor: color.replace(')', ', 0.1)').replace('rgb', 'rgba'),
+                borderWidth: 2,
+                pointRadius: validData.length > 50 ? 0 : 3,
+                pointHoverRadius: 4,
+                fill: true,
+                tension: s.isCategorical ? 0 : 0.3,
+                stepped: s.isCategorical ? 'before' : false
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      var point = context.raw;
+                      if (point && point.x) {
+                        for (var h = 0; h < historyRef.length; h++) {
+                          if (historyRef[h].readingTime === point.x) return historyRef[h].deviceReading;
+                        }
+                      }
+                      return context.formattedValue;
+                    }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  type: 'time',
+                  time: { tooltipFormat: 'MMM d, HH:mm' },
+                  grid: { color: 'rgba(255,255,255,0.1)' },
+                  ticks: { color: '#aaa', maxTicksLimit: 8 }
+                },
+                y: {
+                  grid: { color: 'rgba(255,255,255,0.1)' },
+                  ticks: {
+                    color: '#aaa',
+                    stepSize: s.isCategorical ? 1 : undefined,
+                    callback: s.isCategorical ? function(val) { return val === 1 ? 'On' : 'Off'; } : undefined
+                  },
+                  min: s.isCategorical ? 0 : undefined,
+                  max: s.isCategorical ? 1 : undefined
+                }
+              }
+            }
+          };
+          var chart = new Chart(canvas.getContext('2d'), chartConfig);
+          activeCharts.push(chart);
+        } catch (chartErr) {
+          console.error('Failed to render chart for series ' + i, chartErr);
+        }
+      }
+      if (container.innerHTML === '') {
+        container.innerHTML = '<div class="history-loading">No history data available</div>';
+      }
     }
 
     function closeDeviceModal() {
+      destroyCharts();
       document.getElementById("device-modal").classList.remove("active");
     }
 
@@ -561,6 +822,8 @@ th {
 
     setInterval(loadDoc, 5000);
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 </head>
 <body onload="init();">
   <div class="header">
