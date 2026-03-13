@@ -1,6 +1,6 @@
-# Use the official maven/Java 11 image to create a build artifact.
+# Use Eclipse Temurin with Maven for the build stage.
 # https://hub.docker.com/_/maven
-FROM maven:3-jdk-11-slim AS build-env
+FROM maven:3.9-eclipse-temurin-11 AS build-env
 
 # Set the working directory to /app
 WORKDIR /app
@@ -12,10 +12,9 @@ COPY src ./src
 # Download dependencies and build a release artifact.
 RUN mvn package -DskipTests
 
-# Use OpenJDK for base image.
-# https://hub.docker.com/_/openjdk
-# https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM openjdk:11-jre-slim
+# Use Eclipse Temurin JRE for the runtime image.
+# https://hub.docker.com/_/eclipse-temurin
+FROM eclipse-temurin:11-jre
 
 # Copy the jar to the production image from the builder stage.
 COPY --from=build-env /app/target/home-automation*.jar /home-automation.jar
