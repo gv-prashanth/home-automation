@@ -567,7 +567,8 @@
       overflow: hidden;
     }
 
-    .just-now-sweep {
+    .just-now-row::after {
+      content: '';
       position: absolute;
       top: 0;
       left: -100%;
@@ -580,6 +581,7 @@
         rgba(0,229,255,0.1) 70%,
         transparent 100%);
       animation: justNowSweep 6s ease-in-out infinite;
+      animation-delay: var(--sweep-delay, 0s);
       pointer-events: none;
       z-index: 1;
     }
@@ -656,9 +658,6 @@
       overflow: hidden;
     }
 
-    tbody tr:hover {
-      background: rgba(0, 229, 255, 0.04);
-    }
 
     tr:last-child td { border-bottom: none; }
 
@@ -871,6 +870,70 @@
       text-shadow: 0 0 8px var(--success-glow);
     }
 
+    /* ── Insights panel ── */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.2em;
+      margin-bottom: 1.2em;
+    }
+
+    .insight-card {
+      background: rgba(0,229,255,0.03);
+      border: 1px solid rgba(0,229,255,0.08);
+      border-radius: 10px;
+      padding: 1em 0.8em;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .insight-card:hover {
+      border-color: rgba(0,229,255,0.2);
+      background: rgba(0,229,255,0.06);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0,229,255,0.08);
+    }
+
+    .insight-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.6em;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 0.5em;
+    }
+
+    .insight-value {
+      font-size: 1.1em;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .insight-value.highlight-cyan { color: var(--cyan); }
+    .insight-value.highlight-green { color: var(--success); }
+    .insight-value.highlight-red { color: var(--danger); }
+    .insight-value.highlight-amber { color: var(--amber); }
+
+    .insight-series-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.6em;
+      letter-spacing: 2px;
+      color: var(--cyan-dim);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      margin-top: 1em;
+    }
+
+    .insight-series-label:first-child { margin-top: 0; }
+
+    .trend-context {
+      display: block;
+      font-size: 0.7em;
+      font-weight: 400;
+      opacity: 0.6;
+      margin-top: 2px;
+    }
+
     /* ── Delete button ── */
     .delete-btn {
       padding: 10px 28px;
@@ -1004,7 +1067,7 @@
     }
 
     @media screen and (max-width: 480px) {
-      .modal-grid { grid-template-columns: repeat(2, 1fr); }
+      .modal-grid, .insights-grid { grid-template-columns: repeat(2, 1fr); }
       .header h1 { font-size: 0.9em; }
     }
 
@@ -1246,16 +1309,13 @@
     }
 
     function addSweep(row) {
-      if (row.querySelector('.just-now-sweep')) return;
-      var sweep = document.createElement('div');
-      sweep.className = 'just-now-sweep';
-      sweep.style.animationDelay = (Math.random() * 5).toFixed(2) + 's';
-      row.appendChild(sweep);
+      if (!row.style.getPropertyValue('--sweep-delay')) {
+        row.style.setProperty('--sweep-delay', (Math.random() * 5).toFixed(2) + 's');
+      }
     }
 
     function removeSweep(row) {
-      var sweep = row.querySelector('.just-now-sweep');
-      if (sweep) row.removeChild(sweep);
+      row.style.removeProperty('--sweep-delay');
     }
 
     function playEntrance(row, delay) {
@@ -1500,12 +1560,14 @@
       html += '<div class="history-header">';
       html += '<h3>History</h3>';
       html += '<select class="history-select" id="history-hours" onchange="loadHistory(\'' + escapeAttr(droidId) + '\', \'' + escapeAttr(deviceName) + '\')">';
-      html += '<option value="6">6 Hours</option>';
+      html += '<option value="1">1 Hour</option>';
+      html += '<option value="6" selected>6 Hours</option>';
       html += '<option value="12">12 Hours</option>';
-      html += '<option value="24" selected>24 Hours</option>';
+      html += '<option value="24">24 Hours</option>';
       html += '<option value="48">48 Hours</option>';
       html += '</select>';
       html += '</div>';
+      html += '<div id="history-insights"></div>';
       html += '<div id="history-charts"><div class="history-loading">Retrieving transmissions...</div></div>';
       html += '</div>';
 
@@ -1518,7 +1580,9 @@
     function loadHistory(droidId, deviceName) {
       var hours = document.getElementById("history-hours").value;
       var container = document.getElementById("history-charts");
+      var insightsContainer = document.getElementById("history-insights");
       container.innerHTML = '<div class="history-loading">Retrieving transmissions...</div>';
+      if (insightsContainer) insightsContainer.innerHTML = '';
       destroyCharts();
 
       var xhr = new XMLHttpRequest();
@@ -1528,6 +1592,11 @@
           if (xhr.status >= 200 && xhr.status < 300) {
             try {
               var historyData = JSON.parse(xhr.responseText);
+              if (insightsContainer && historyData && historyData.length > 0) {
+                var series = analyzeHistorySeries(historyData);
+                var insights = computeInsights(series, historyData);
+                renderInsights(insightsContainer, insights);
+              }
               renderHistoryCharts(container, historyData);
             } catch (err) {
               container.innerHTML = '<div class="history-loading">Failed to decode transmission</div>';
@@ -1596,6 +1665,133 @@
         }
       }
       return series;
+    }
+
+    function computeInsights(series, history) {
+      var results = [];
+      for (var i = 0; i < series.length; i++) {
+        var s = series[i];
+        var vals = s.data.filter(function(d) { return d.y !== null; }).map(function(d) { return d.y; });
+        if (vals.length === 0) continue;
+
+        var insight = { label: s.label, isCategorical: s.isCategorical, stats: {} };
+
+        if (s.isCategorical) {
+          var points = s.data.filter(function(d) { return d.y !== null; });
+          var onTime = 0, offTime = 0, toggles = 0;
+
+          if (points.length >= 2) {
+            for (var v = 0; v < points.length - 1; v++) {
+              var t0 = new Date(points[v].x).getTime();
+              var t1 = new Date(points[v + 1].x).getTime();
+              var dur = t1 - t0;
+              if (points[v].y === 1) onTime += dur; else offTime += dur;
+              if (points[v + 1].y !== points[v].y) toggles++;
+            }
+          } else if (points.length === 1) {
+            if (points[0].y === 1) onTime = 1; else offTime = 1;
+          }
+
+          var totalTime = onTime + offTime;
+          insight.stats.onPercent = totalTime > 0 ? Math.round((onTime / totalTime) * 100) : 0;
+          insight.stats.offPercent = totalTime > 0 ? 100 - insight.stats.onPercent : 0;
+          insight.stats.toggles = toggles;
+        } else {
+          var min = vals[0], max = vals[0], sum = 0;
+          for (var v = 0; v < vals.length; v++) {
+            if (vals[v] < min) min = vals[v];
+            if (vals[v] > max) max = vals[v];
+            sum += vals[v];
+          }
+          var avg = sum / vals.length;
+          var minStr = String(min);
+          var maxStr = String(max);
+          var minDec = minStr.indexOf('.') !== -1 ? minStr.split('.')[1].length : 0;
+          var maxDec = maxStr.indexOf('.') !== -1 ? maxStr.split('.')[1].length : 0;
+          var decimals = Math.max(minDec, maxDec);
+          insight.stats.min = min.toFixed(decimals);
+          insight.stats.max = max.toFixed(decimals);
+          insight.stats.avg = avg.toFixed(decimals);
+
+          if (vals.length >= 3) {
+            var valueRange = max - min;
+            var stableThreshold = valueRange > 0 ? valueRange * 0.05 : 0.01;
+
+            function linRegSlope(v) {
+              var ln = v.length;
+              var sx = 0, sy = 0, sxy = 0, sx2 = 0;
+              for (var k = 0; k < ln; k++) {
+                sx += k; sy += v[k]; sxy += k * v[k]; sx2 += k * k;
+              }
+              return (ln * sxy - sx * sy) / (ln * sx2 - sx * sx);
+            }
+
+            function classifySlope(slope, count) {
+              var totalChange = Math.abs(slope * (count - 1));
+              return totalChange > stableThreshold ? (slope > 0 ? 'Rising' : 'Falling') : 'Stable';
+            }
+
+            var overallSlope = linRegSlope(vals);
+            var overallTrend = classifySlope(overallSlope, vals.length);
+
+            var segStart = Math.floor(vals.length * 2 / 3);
+            var seg = vals.slice(segStart);
+            var recentSlope = linRegSlope(seg);
+            var recentTrend = classifySlope(recentSlope, seg.length);
+
+            insight.stats.trend = recentTrend;
+            if (overallTrend !== recentTrend) {
+              if (overallTrend === 'Stable' && recentTrend === 'Falling') insight.stats.trendContext = 'Peaked';
+              else if (overallTrend === 'Stable' && recentTrend === 'Rising') insight.stats.trendContext = 'Recovering';
+              else if (overallTrend === 'Rising' && recentTrend === 'Falling') insight.stats.trendContext = 'Peaked';
+              else if (overallTrend === 'Rising' && recentTrend === 'Stable') insight.stats.trendContext = 'Leveling Off';
+              else if (overallTrend === 'Falling' && recentTrend === 'Rising') insight.stats.trendContext = 'Recovering';
+              else if (overallTrend === 'Falling' && recentTrend === 'Stable') insight.stats.trendContext = 'Leveling Off';
+            }
+          } else if (vals.length === 2) {
+            var valueRange = max - min;
+            var delta = vals[1] - vals[0];
+            insight.stats.trend = Math.abs(delta) > valueRange * 0.05 ? (delta > 0 ? 'Rising' : 'Falling') : 'Stable';
+          }
+        }
+
+        results.push(insight);
+      }
+      return results;
+    }
+
+    function renderInsights(container, insights) {
+      if (!insights || insights.length === 0) return;
+      var html = '';
+      for (var i = 0; i < insights.length; i++) {
+        var ins = insights[i];
+
+        if (insights.length > 1) {
+          html += '<div class="insight-series-label">' + escapeHtml(ins.label) + '</div>';
+        }
+
+        html += '<div class="insights-grid">';
+        if (ins.isCategorical) {
+          html += '<div class="insight-card"><div class="insight-label">On Time</div><div class="insight-value highlight-green">' + ins.stats.onPercent + '%</div></div>';
+          html += '<div class="insight-card"><div class="insight-label">Off Time</div><div class="insight-value highlight-amber">' + ins.stats.offPercent + '%</div></div>';
+          html += '<div class="insight-card"><div class="insight-label">Toggles</div><div class="insight-value highlight-cyan">' + ins.stats.toggles + '</div></div>';
+        } else {
+          html += '<div class="insight-card"><div class="insight-label">Min</div><div class="insight-value highlight-cyan">' + ins.stats.min + '</div></div>';
+          html += '<div class="insight-card"><div class="insight-label">Max</div><div class="insight-value highlight-red">' + ins.stats.max + '</div></div>';
+          html += '<div class="insight-card"><div class="insight-label">Average</div><div class="insight-value highlight-green">' + ins.stats.avg + '</div></div>';
+          if (ins.stats.trend) {
+            var trendColor = ins.stats.trend === 'Rising' ? 'highlight-red' : (ins.stats.trend === 'Falling' ? 'highlight-cyan' : 'highlight-green');
+            var trendIcon = ins.stats.trend === 'Rising' ? '&#9650; ' : (ins.stats.trend === 'Falling' ? '&#9660; ' : '&#9644; ');
+            var trendText = trendIcon + ins.stats.trend;
+            if (ins.stats.trendContext) {
+              trendText += '<span class="trend-context"> (' + ins.stats.trendContext + ')</span>';
+            }
+            html += '<div class="insight-card"><div class="insight-label">Trend</div><div class="insight-value ' + trendColor + '">' + trendText + '</div></div>';
+          }
+        }
+        html += '</div>';
+      }
+      container.innerHTML = html;
     }
 
     function renderHistoryCharts(container, history) {
